@@ -1,0 +1,12 @@
+# 环境与依赖
+.venv/
+__pycache__/
+node_modules/
+
+# 中间产物与运行数据
+scratch/
+*.log
+.appworld/
+
+# 凭证
+.env

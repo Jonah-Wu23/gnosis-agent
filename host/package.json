@@ -1,0 +1,22 @@
+{
+  "name": "@gnosis/host",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "GNOSIS Agent host runtime: cordis component container for workflow / tool / context / skill plugins",
+  "scripts": {
+    "boot": "tsx src/boot.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "cordis": "4.0.0-rc.10"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.1",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

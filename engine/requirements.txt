@@ -1,0 +1,5 @@
+# Installed 2026-10-04 with Python 3.12.3 (WSL2 Ubuntu 24.04, venv ~/.venvs/gnosis); versions from pip freeze
+appworld==0.1.3.post1
+gepa==0.1.4
+openai==3.24.0
+python-dotenv==1.2.4

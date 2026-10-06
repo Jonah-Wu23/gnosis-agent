@@ -15,7 +15,7 @@ from dotenv import load_dotenv
 
 os.environ["AUTOMATIONBENCH_STRICT_ASSERTIONS"] = "1"
 
-from engine.scoped_units import Budget, BudgetExceeded, UnitLibrary, append_record, fingerprint, affected_tasks, POLICY, experiment_version, AIFormatError, CallJournal, TaskCostExceeded, save_json, harness_blocker, require_harness_ready, ExecutionBlocked, ProposalInterrupted, require_model_access
+from engine.scoped_units import Budget, BudgetExceeded, UnitLibrary, append_record, fingerprint, affected_tasks, POLICY, experiment_version, AIFormatError, CallJournal, TaskCostExceeded, save_json, harness_blocker, require_harness_ready, ExecutionBlocked, ExecutionTruncated, ProposalInterrupted, require_model_access
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "experiments/pilot"
@@ -71,12 +71,16 @@ def execution_failure(error):
     from engine.component_host import CandidateError
     from verifiers.errors import InvalidModelResponseError, ToolParseError
 
+    if not isinstance(error, BaseException):
+        return RuntimeError(str(error)), "harness_or_integration_error"
     cause = error
     while cause.__cause__ is not None and not isinstance(cause, (
             CandidateError, TaskCostExceeded, BudgetExceeded, ExecutionBlocked,
-            InvalidModelResponseError, ToolParseError)):
+            InvalidModelResponseError, ToolParseError, ExecutionTruncated)):
         cause = cause.__cause__
-    if isinstance(cause, ExecutionBlocked):
+    if isinstance(cause, ExecutionTruncated):
+        category = "execution_truncated"
+    elif isinstance(cause, ExecutionBlocked):
         category = "execution_blocked"
     elif isinstance(cause, BudgetExceeded):
         category = "budget_stop"
@@ -205,7 +209,7 @@ async def automation(args):
                                              sampling_args={"reasoning_effort": "high", "temperature": 0,
                                                             "seed": POLICY["seed"], "max_tokens": POLICY["execution_output_tokens"]},
                                              num_examples=1, rollouts_per_example=1, max_concurrent=1,
-                                             state_columns=["scope_touches", "injection_events", "_assertion_results", "_perf", "error", "gnosis_cost_usd", "wire_trace"])
+                                             state_columns=["scope_touches", "injection_events", "_assertion_results", "_perf", "error", "gnosis_cost_usd", "wire_trace", "boundary_trace", "boundary_schema", "termination_status", "actual_tool_actions", "active_extensions", "first_effect_boundaries", "component_capability_calls", "harness_defects"])
             except BudgetExceeded:
                 raise
             except Exception as error:
@@ -260,6 +264,13 @@ async def automation(args):
                       "execution_id": execution_id,
                       "confirmation_of": getattr(args, "confirmation_of", {}).get(name),
                       "wire_trace": record.get("wire_trace", []),
+                      "boundary_trace": record.get("boundary_trace", []),
+                      "boundary_schema": record.get("boundary_schema"),
+                      "termination_status": record.get("termination_status"),
+                      "actual_tool_actions": record.get("actual_tool_actions", []),
+                      "active_extensions": record.get("active_extensions", {}),
+                      "first_effect_boundaries": record.get("first_effect_boundaries", {}),
+                      "component_capability_calls": record.get("component_capability_calls", 0),
                       "perf": record["_perf"], "duration_s": time.monotonic() - started,
                       "cost_usd": record["gnosis_cost_usd"]}
             append_record(ledger, record)

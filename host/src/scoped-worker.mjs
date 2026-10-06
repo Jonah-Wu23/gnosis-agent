@@ -79,7 +79,8 @@ connection.onRequest('load', async ({ candidate_id, component, source }) => {
   context.setProp(context.global, 'console', consoleHandle)
   consoleHandle.dispose()
   loaded.exports = unwrap(context.evalCode(output.outputText, `${component}.js`, { type: 'module' }), component, candidate_id)
-  const expected = { T: 'formatObservation', C: 'buildContext', W: 'beforeStep' }[component]
+  const expected = { T: 'formatObservation', C: 'buildContext', W: 'beforeStep', E: 'onBoundary' }[component]
+  if (!expected) reject(component, candidate_id, '未登记的组件类型')
   const fn = context.getProp(loaded.exports, expected)
   const valid = context.typeof(fn) === 'function'
   fn.dispose()
@@ -99,7 +100,13 @@ function invokeIsolated(params, method, input) {
   try {
     const result = unwrap(context.callFunction(fn, context.undefined, argument), component, candidate_id)
     try {
-      const value = context.dump(result)
+      let value
+      try {
+        value = context.dump(result)
+      } catch (error) {
+        // 候选返回值无法转换属于候选自身失败，不能记成宿主故障
+        reject(component, candidate_id, `组件返回值无法转换：${error && error.message ? error.message : String(error)}`)
+      }
       if (!value || typeof value !== 'object' || Array.isArray(value)) reject(component, candidate_id, '组件必须返回 JSON 对象')
       return value
     } finally {
@@ -120,6 +127,7 @@ function invoke(params, method, input) {
 connection.onRequest('t.formatObservation', p => invoke(p, 'formatObservation', { raw: p.raw, step: p.step, code: p.code }))
 connection.onRequest('c.buildContext', p => invoke(p, 'buildContext', p.input))
 connection.onRequest('w.beforeStep', p => invoke(p, 'beforeStep', p.state))
+connection.onRequest('e.onBoundary', p => invoke(p, 'onBoundary', p.input))
 connection.onRequest('unload', async () => { if (fiber) await fiber.dispose(); else release(); return { ok: true } })
 connection.onRequest('shutdown', async () => { if (fiber) await fiber.dispose(); else release(); setTimeout(() => process.exit(0), 20); return { ok: true } })
 connection.listen()

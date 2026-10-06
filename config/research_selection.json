@@ -1,0 +1,766 @@
+{
+  "schema": "gnosis.research.v1",
+  "seed": 100,
+  "upstreams": {
+    "StarHarness": "a56d8f6ef7d15475aae4cc302b67d0113b960153",
+    "ace": "82709de050e1db6e6ef2f07bcb0393560b94992a",
+    "AutomationBench": "4a8e1061254004d9dac807054eed33fad7d1ff14"
+  },
+  "search": [
+    "sales.linkedin_profile_enrichment",
+    "sales.chatgpt_contract_summary",
+    "sales.slack_deal_notification",
+    "sales.sheets_reconciliation",
+    "sales.mark_vip_emails_read",
+    "operations.facebook_roas_monitoring",
+    "operations.purchase_order_three_way_match",
+    "operations.twilio_afterhours_incident",
+    "operations.drive_slack_dock_schedule",
+    "operations.calendar_slack_training",
+    "hr.airtable_learning_path_assignment",
+    "hr.promotion_announcement",
+    "hr.airtable_skills_matrix",
+    "hr.policy_update_distribution",
+    "hr.mandatory_meeting_compliance",
+    "marketing.customer_milestone",
+    "marketing.landing_page_conversion",
+    "marketing.competitive_response_plan",
+    "marketing.seasonal_campaign",
+    "marketing.content_syndication",
+    "support.gorgias_channel_consolidation",
+    "support.hiver_coaching_pipeline",
+    "support.freshdesk_sla_monitoring",
+    "support.intercom_freshdesk_escalation",
+    "support.gorgias_freshdesk_migration",
+    "finance.prepaid_amortization",
+    "finance.project_profitability",
+    "finance.invoice_file_organization",
+    "finance.qb_invoice_from_orders",
+    "finance.xero_credit_allocation"
+  ],
+  "selection": [
+    "sales.chatgpt_lead_summary_generator",
+    "operations.cross_department_budget_reconciliation",
+    "hr.compliance_training_enforcement",
+    "marketing.content_localization",
+    "support.helpcrunch_engagement_scoring",
+    "finance.dept_expense_rollup"
+  ],
+  "heldout": [
+    "sales.soft_matching",
+    "sales.linkedin_event_promotion",
+    "sales.cross_reference_validation",
+    "sales.docusign_void_resend",
+    "sales.send_customer_email",
+    "operations.space_utilization_analysis",
+    "operations.office_supply_budget_monitoring",
+    "operations.fire_extinguisher_inspection_schedule",
+    "operations.hubspot_personalized_outreach",
+    "operations.sheets_asana_approved_request",
+    "hr.slack_channel_onboarding",
+    "hr.performance_feedback_logging",
+    "hr.employee_request_routing",
+    "hr.interview_scheduling",
+    "hr.salary_adjustment_processing",
+    "marketing.social_engagement_response",
+    "marketing.partner_comarketing",
+    "marketing.event_followup_personalization",
+    "marketing.influencer_contract_tracking",
+    "marketing.social_content_calendar",
+    "support.zendesk_maintenance_notify",
+    "support.reamaze_intercom_migration",
+    "support.helpscout_jira_bugs",
+    "support.hiver_response_sla",
+    "support.zendesk_hubspot_churn_risk",
+    "finance.wave_client_statement",
+    "finance.qb_undeposited_funds",
+    "finance.gl_variance_analysis",
+    "finance.monday_project_billing",
+    "finance.vendor_payment_approval"
+  ],
+  "checkpoint": [
+    "sales.linkedin_profile_enrichment",
+    "operations.facebook_roas_monitoring",
+    "hr.airtable_learning_path_assignment",
+    "marketing.customer_milestone",
+    "support.gorgias_channel_consolidation",
+    "finance.prepaid_amortization"
+  ],
+  "tasks": {
+    "sales.linkedin_profile_enrichment": {
+      "domain": "sales",
+      "contract": "299785dee42e42682b6c5cc10794943dffed8672071414d6a7ec9327f97e8fa3",
+      "services": [
+        "gmail",
+        "linkedin",
+        "salesforce"
+      ]
+    },
+    "sales.chatgpt_contract_summary": {
+      "domain": "sales",
+      "contract": "262852fe117e4dcb04e8c079595f52001554bd47d55e59ab2221c25382a4ca1a",
+      "services": [
+        "chatgpt",
+        "docusign",
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "salesforce",
+        "slack"
+      ]
+    },
+    "sales.slack_deal_notification": {
+      "domain": "sales",
+      "contract": "04c0e1accdf8d2a7d7693e5862a81b8fc3391bd50492c6e19ca70d43db90eba7",
+      "services": [
+        "gmail",
+        "salesforce",
+        "slack"
+      ]
+    },
+    "sales.sheets_reconciliation": {
+      "domain": "sales",
+      "contract": "012e753eb72b94c791845db81fcb56d4a9adfdecacb6785783c3e4ac8972a2c8",
+      "services": [
+        "google_drive",
+        "google_sheets",
+        "salesforce"
+      ]
+    },
+    "sales.mark_vip_emails_read": {
+      "domain": "sales",
+      "contract": "665384cba20aab3722538d8f968264cf82ab3b43fdfa4383097ba1fbda01293f",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "salesforce"
+      ]
+    },
+    "sales.chatgpt_lead_summary_generator": {
+      "domain": "sales",
+      "contract": "3d958635c72530a8dee64c35892d0393560e43cc4ea1ca2ee81f5e9b29615eac",
+      "services": [
+        "chatgpt",
+        "gmail",
+        "linkedin",
+        "salesforce",
+        "slack"
+      ]
+    },
+    "sales.soft_matching": {
+      "domain": "sales",
+      "contract": "184edc8fc5515f7b26859a03495578335227029fa7cfae9197efbbc0b814b10a",
+      "services": [
+        "gmail",
+        "salesforce"
+      ]
+    },
+    "sales.linkedin_event_promotion": {
+      "domain": "sales",
+      "contract": "2bbe101b822d57365ca084fef102aee502b6e50bc427d61987fdb1754a67d21f",
+      "services": [
+        "gmail",
+        "linkedin",
+        "salesforce",
+        "slack"
+      ]
+    },
+    "sales.cross_reference_validation": {
+      "domain": "sales",
+      "contract": "98c328c704e6b0ccc10aa760869986cbe79a65d5c7028ff5d2e1b451280b076f",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "salesforce"
+      ]
+    },
+    "sales.docusign_void_resend": {
+      "domain": "sales",
+      "contract": "171d3c1e4df931695606cc9de926dc4584fba335633bd84f8ba3c2d1d50548eb",
+      "services": [
+        "docusign",
+        "gmail",
+        "salesforce"
+      ]
+    },
+    "sales.send_customer_email": {
+      "domain": "sales",
+      "contract": "6ae03773c23e856ee889570ecaf5f7d36da040e1cfb35f7a55d1ae3090249f20",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "salesforce"
+      ]
+    },
+    "operations.facebook_roas_monitoring": {
+      "domain": "operations",
+      "contract": "e319bb58e3c5d25babfdebc2a67e50c3f936a1b1deede4f4cbd4ba2f6d2882cb",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "operations.purchase_order_three_way_match": {
+      "domain": "operations",
+      "contract": "99d8ee60b289e2f3c4d8af5fcfd7b2e715cfe5dd979c47b5344c7b1f74918cbc",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "monday"
+      ]
+    },
+    "operations.twilio_afterhours_incident": {
+      "domain": "operations",
+      "contract": "2686d76850496006102b7a12fb00d68f7b02e3607da59c5dec86f8fe05b2e2fa",
+      "services": [
+        "confluence",
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "jira",
+        "twilio"
+      ]
+    },
+    "operations.drive_slack_dock_schedule": {
+      "domain": "operations",
+      "contract": "35888ffbfd9184fe19f077f149a67e1c3336888795807e91a35e532ac4aaf4ca",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "operations.calendar_slack_training": {
+      "domain": "operations",
+      "contract": "92bd63f80bffddc480411e8eb3128d69508dcc568a754b52ee7cc4d36d55c291",
+      "services": [
+        "google_calendar",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "operations.cross_department_budget_reconciliation": {
+      "domain": "operations",
+      "contract": "b50e81f98c7c0219ca912c3c92e8da2ecc627f8c0f354cea10d124729364ab7f",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "operations.space_utilization_analysis": {
+      "domain": "operations",
+      "contract": "e9abd258865083f28e9acd24839d834c604ce40e2b816c257c68c8a993e4a806",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "notion"
+      ]
+    },
+    "operations.office_supply_budget_monitoring": {
+      "domain": "operations",
+      "contract": "dbbd623d0f2adf560ca0585cf030b6cfbab25ade0e1972b43b65a911e076e25c",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "operations.fire_extinguisher_inspection_schedule": {
+      "domain": "operations",
+      "contract": "ebb8384606b1346fcb793a029b90a552a904c11bca8a9ed3ebfad97d75f8402f",
+      "services": [
+        "gmail",
+        "google_calendar",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "operations.hubspot_personalized_outreach": {
+      "domain": "operations",
+      "contract": "9946fe6984f4140a3ba179af2196653edadf07a8631620964f77181e52801808",
+      "services": [
+        "chatgpt",
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "hubspot"
+      ]
+    },
+    "operations.sheets_asana_approved_request": {
+      "domain": "operations",
+      "contract": "4a48d64ebbca197a128b02b3439ce6b2c95066781578157aa31af6a01ff4e867",
+      "services": [
+        "asana",
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "hr.airtable_learning_path_assignment": {
+      "domain": "hr",
+      "contract": "3da754b39565e042957dcac4d3c35ed494bc21bc70abd09ba4409decb5f18775",
+      "services": [
+        "airtable",
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "hr.promotion_announcement": {
+      "domain": "hr",
+      "contract": "2c800c69e72e1b56c89fc00994a78bb1c1c24184ded0c47d0b162a747b86ee63",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "hr.airtable_skills_matrix": {
+      "domain": "hr",
+      "contract": "47f4620fea320b3912baffe4270fac542ddad57a36e6f21fbd7a5a794ad44f4d",
+      "services": [
+        "airtable",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "hr.policy_update_distribution": {
+      "domain": "hr",
+      "contract": "23f292d3092bfece229bc5a16422f75418abaf20ff92d7cb39834d5b4e2be531",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "hr.mandatory_meeting_compliance": {
+      "domain": "hr",
+      "contract": "f542b4145049d83688e7f14b2d6a651b6eeff468bd2dcdf98c6986e031a8b701",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "hr.compliance_training_enforcement": {
+      "domain": "hr",
+      "contract": "05a1800b70d814581dac52ecd86c569819f49557063f04fbca5bb4147f3a4a49",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "hr.slack_channel_onboarding": {
+      "domain": "hr",
+      "contract": "06e283010838ff5831a766fc4962fe50bf8a38b3b1c3e7d8ab61092910fd0648",
+      "services": [
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "hr.performance_feedback_logging": {
+      "domain": "hr",
+      "contract": "b8b24f2a9708ad1a93a38b7a90db8a7146df2f0486f4da1272e77487099343a1",
+      "services": [
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "hr.employee_request_routing": {
+      "domain": "hr",
+      "contract": "15d0fc382fd04b4149e50829a6e05f39166f2ea8eb368888507de81fd333a251",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "hr.interview_scheduling": {
+      "domain": "hr",
+      "contract": "d9ef47c1d250ce1ff1a056559399f046afad42a106447cf7ff9e2454dbd86b24",
+      "services": [
+        "gmail",
+        "google_calendar",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "hr.salary_adjustment_processing": {
+      "domain": "hr",
+      "contract": "d4d2d9fd486c073435c81101a937c7991c77a2bf9cec2bc6ef793cc364409808",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "marketing.customer_milestone": {
+      "domain": "marketing",
+      "contract": "937ffafdbfd8450572e879597522ecb9278b0ba7fe4cd690b4c5b1be2321c4a1",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "marketing.landing_page_conversion": {
+      "domain": "marketing",
+      "contract": "b952774dec4db4c157d4e170bf4d70565e7483bde47796879737611c121ebc88",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "marketing.competitive_response_plan": {
+      "domain": "marketing",
+      "contract": "9d6bcd56cafbc006dc2cf932dc359a4accaaec9bee4ff9c832ba6a5a1f3edf23",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "hubspot",
+        "slack"
+      ]
+    },
+    "marketing.seasonal_campaign": {
+      "domain": "marketing",
+      "contract": "b802b3de8ff0175450585d1964468972a044b213df6043640347468de8926487",
+      "services": [
+        "buffer",
+        "gmail"
+      ]
+    },
+    "marketing.content_syndication": {
+      "domain": "marketing",
+      "contract": "2dbccbf0d89743356e0b0fc32c4588f21463cd99487dbdbdedbed0fb3a28ba18",
+      "services": [
+        "buffer",
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "marketing.content_localization": {
+      "domain": "marketing",
+      "contract": "b06368ea107460cc242366b3eb34555bcfbe941273a65c538b7a718458aa0c89",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "marketing.social_engagement_response": {
+      "domain": "marketing",
+      "contract": "e1db67bfbbb90fb107cda6ad22b175086b5ba7039eb4e18b87735b15ee271b56",
+      "services": [
+        "gmail",
+        "slack",
+        "twitter"
+      ]
+    },
+    "marketing.partner_comarketing": {
+      "domain": "marketing",
+      "contract": "b02acd6b8fd57ad165ce5584c724dec19372cde404d7c579417a3e0eef33af19",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "marketing.event_followup_personalization": {
+      "domain": "marketing",
+      "contract": "1c1ccef4c8e9f82559667da0c4dfadc3338f60bd14a4d881298d88d8d33e2e6e",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "hubspot"
+      ]
+    },
+    "marketing.influencer_contract_tracking": {
+      "domain": "marketing",
+      "contract": "0bfe4806e23c0ff83a570cb822ba9b2300feb30780e56af5edff73897d083147",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "marketing.social_content_calendar": {
+      "domain": "marketing",
+      "contract": "79a62068f79e2b44a9654f98ddaa2127461a5f72292d942892f2a47cb1d86752",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "support.gorgias_channel_consolidation": {
+      "domain": "support",
+      "contract": "2475da59db1216226a95d18ca8de550f0c15a49db78a6bdf9b077838c658be89",
+      "services": [
+        "google_drive",
+        "google_sheets",
+        "gorgias"
+      ]
+    },
+    "support.hiver_coaching_pipeline": {
+      "domain": "support",
+      "contract": "58306eb20026740c3a65d63bbabf69f5bdf2670e55c80ab32d52c654fbd1dc94",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "hiver"
+      ]
+    },
+    "support.freshdesk_sla_monitoring": {
+      "domain": "support",
+      "contract": "d2715d1c3691bd25f358b42b8a070e797f20579b07414cbac946055ec31ace9e",
+      "services": [
+        "freshdesk",
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "jira",
+        "slack"
+      ]
+    },
+    "support.intercom_freshdesk_escalation": {
+      "domain": "support",
+      "contract": "09771667ad1973a062cff8bccbb2eeb832d936307c3c3065e66a4ececa64dcd0",
+      "services": [
+        "freshdesk",
+        "google_drive",
+        "google_sheets",
+        "intercom",
+        "slack"
+      ]
+    },
+    "support.gorgias_freshdesk_migration": {
+      "domain": "support",
+      "contract": "660614e6ad52ea9b9476696dbb6ce072ae237c30d6aa39dcc130cf0734709fa6",
+      "services": [
+        "freshdesk",
+        "google_drive",
+        "google_sheets",
+        "gorgias",
+        "slack"
+      ]
+    },
+    "support.helpcrunch_engagement_scoring": {
+      "domain": "support",
+      "contract": "79e5da863bf1331c73c22531b39a15b2c3b145955599a8ad489e072f3abdcd2d",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "helpcrunch",
+        "slack"
+      ]
+    },
+    "support.zendesk_maintenance_notify": {
+      "domain": "support",
+      "contract": "e77d131309e862251c236bb26d8bb128f0c2fc3cb49d72dcd7582456d99664b5",
+      "services": [
+        "gmail",
+        "google_calendar",
+        "google_drive",
+        "google_sheets",
+        "slack",
+        "zendesk"
+      ]
+    },
+    "support.reamaze_intercom_migration": {
+      "domain": "support",
+      "contract": "8ed6863326d70cf8ae827207cde4fe6e1c2f68c7e376803fb7351e0e9872daea",
+      "services": [
+        "google_drive",
+        "google_sheets",
+        "intercom",
+        "reamaze",
+        "slack"
+      ]
+    },
+    "support.helpscout_jira_bugs": {
+      "domain": "support",
+      "contract": "c95b827b7386759510c0d6cb6118052793345a2643aee8f1962eb03542d6d8a5",
+      "services": [
+        "google_drive",
+        "google_sheets",
+        "helpscout",
+        "jira",
+        "slack"
+      ]
+    },
+    "support.hiver_response_sla": {
+      "domain": "support",
+      "contract": "80ea6bacf00157e2a4c5b5a9b5cef8fb60e289b109a573c848c18086c4b08e10",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "hiver",
+        "slack"
+      ]
+    },
+    "support.zendesk_hubspot_churn_risk": {
+      "domain": "support",
+      "contract": "5d45077822216f9c1b9018c42b19449996046aae3523edc9f58b28d8e2c74faf",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "hubspot",
+        "salesforce",
+        "slack",
+        "zendesk"
+      ]
+    },
+    "finance.prepaid_amortization": {
+      "domain": "finance",
+      "contract": "d46ac3c2ceb3a5ac278841b053dbddb7af66e9f7843c509e3d7877d2ca2f7451",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "slack"
+      ]
+    },
+    "finance.project_profitability": {
+      "domain": "finance",
+      "contract": "ab09c5eefdb31ea21b37b6f09048b1a20f31e9d3eec72e47b7f303a85bcb3120",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "finance.invoice_file_organization": {
+      "domain": "finance",
+      "contract": "21c24db3e7058f14089e5950f6bf920d831903978687c1edc143d22572e10090",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "finance.qb_invoice_from_orders": {
+      "domain": "finance",
+      "contract": "ebb10b623de6c76379f6e1bd98a7b2fae56d26d68d312fc50f2a0f121f9201d1",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "quickbooks"
+      ]
+    },
+    "finance.xero_credit_allocation": {
+      "domain": "finance",
+      "contract": "fe708a0986ce6102d2d10e1d3063f21896a2aa161f1769ae5468f8938634a4ce",
+      "services": [
+        "gmail",
+        "google_drive",
+        "slack",
+        "xero"
+      ]
+    },
+    "finance.dept_expense_rollup": {
+      "domain": "finance",
+      "contract": "7df98628908c4065f2cf5a908458ce43630c1d1a5806c598bf29b176dabfff84",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "finance.wave_client_statement": {
+      "domain": "finance",
+      "contract": "869b87940834eff0aa9dec176c1825dba2271f968ca853a8dee6bc627a89acfc",
+      "services": [
+        "gmail",
+        "google_drive",
+        "wave"
+      ]
+    },
+    "finance.qb_undeposited_funds": {
+      "domain": "finance",
+      "contract": "2d9acabc89f0d38bee967ccb4ed6c8b026c153a629c8629acbf84ae4733f4b77",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets",
+        "quickbooks"
+      ]
+    },
+    "finance.gl_variance_analysis": {
+      "domain": "finance",
+      "contract": "d753d40328d9234e0d88c440bfb6c562f8fb8355ed9685e0d340b656001ef895",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "finance.monday_project_billing": {
+      "domain": "finance",
+      "contract": "de5364eb3a5bc30f4d6eb19fc82bd3d91d7e9bf48e1a36db2f58e008db29cb01",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    },
+    "finance.vendor_payment_approval": {
+      "domain": "finance",
+      "contract": "d9c884938ef582fb72217c88db59f4b09031d3f13e32dd7b6459347f61fca3b1",
+      "services": [
+        "gmail",
+        "google_drive",
+        "google_sheets"
+      ]
+    }
+  },
+  "selection_repeats": 2,
+  "checkpoint_learning_fraction": 0.5,
+  "arms": [
+    "fixed",
+    "ace",
+    "global",
+    "gnosis",
+    "repeat"
+  ],
+  "arm_learning_limits_usd": {
+    "fixed": 2.0,
+    "ace": 3.0,
+    "global": 8.5,
+    "gnosis": 8.5
+  },
+  "identity": "a30c92f7244277635fdf414bf944f9995b71e0359c799eaa49e07a91d63a9fd5"
+}

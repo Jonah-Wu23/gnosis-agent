@@ -22,11 +22,13 @@ client = OpenAI(
 
 
 def chat(messages, *, reasoning_effort=REASONING_EFFORT, **params):
-    """发一次 Chat Completions 请求，返回原始响应对象。"""
+    """发一次 Chat Completions 请求，返回原始响应对象。DeepSeek 官方 API 的思考开关走 extra_body。"""
     require_model_access()
+    extra_body = {"thinking": {"type": "enabled"}, **params.pop("extra_body", {})}
     return client.chat.completions.create(
         model=MODEL,
         messages=messages,
         reasoning_effort=reasoning_effort,
+        extra_body=extra_body,
         **params,
     )

@@ -6,7 +6,7 @@ from typing import Literal
 
 from openai import APIConnectionError, APIStatusError
 from openai.types.chat import ChatCompletion
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 
 from engine.llm_client import chat, client
 from engine.automation_adapter import matches, restore_messages
@@ -22,6 +22,13 @@ class UnitProposal(BaseModel):
     component: Literal["T", "C", "W"] | None
     source: None
     replaces: list[str] = Field(default_factory=list)
+
+    @field_validator("scope")
+    @classmethod
+    def scope_contract(cls, value):
+        from engine.activation import validate_scope
+        validate_scope(value)
+        return value
 
 
 class ProposalEnvelope(BaseModel):
@@ -205,7 +212,7 @@ def propose(record, library, budget, ace_root, previous_unit=None, failure=None,
     )
     cost_rule = (
         "Cost you should weigh: a context component may issue lmRequest sub-requests, each costing about $0.0059 "
-        "(a 20 KB prompt plus up to 8192 output tokens), and a task is stopped once it spends $0.15, so a component "
+        "(a 20 KB prompt plus up to 32768 output tokens), and a task is stopped once it spends $0.15, so a component "
         "that asks the model on every step kills its own task. A task also runs at most "
         + str(POLICY["max_steps"]) + " steps. "
     )

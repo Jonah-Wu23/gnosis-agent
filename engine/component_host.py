@@ -17,6 +17,7 @@ METHOD_COMPONENT = {
     "w.beforeStep": "W",
     "t.formatObservation": "T",
     "c.buildContext": "C",
+    "e.onBoundary": "E",
 }
 
 
@@ -266,3 +267,6 @@ class ComponentHost:
         return self.request(
             "c.buildContext", {"candidate_id": candidate_id, "input": context_input}
         )
+
+    def e_on_boundary(self, candidate_id: str, inputs: dict) -> dict:
+        return self.request("e.onBoundary", {"candidate_id": candidate_id, "input": inputs})

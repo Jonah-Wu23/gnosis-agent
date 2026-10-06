@@ -16,11 +16,11 @@ POLICY = {
     "format_retries": 1, "candidate_repairs": 3,
     "pilot_unit_rounds": 6, "main_experiment_rounds_per_failed_task": 1,
     "round_budget_tasks": 20, "observed_cost_default_usd": 0.03,
-    "max_steps": 50, "execution_output_tokens": 8192, "proposal_output_tokens": 32768,
+    "max_steps": 50, "execution_output_tokens": 393216, "proposal_output_tokens": 393216,
     "max_pairs": 8, "seed": 100, "sage_alpha": 0.05, "sage_penalty": 1.0,
-    "sage_regression_cap": 0.0, "task_cost_cap_usd": 0.15, "default_components": True,
-    "pilot_limit_usd": 5.0, "total_limit_usd": 45.0,
-    "window_limit_usd": 12.0, "window_seconds": 18000,
+    "sage_regression_cap": 0.0, "task_cost_cap_usd": None, "default_components": True,
+    "pilot_limit_usd": 5.0, "total_limit_usd": None, "min_attempt_usd": 0.02,
+    "window_limit_usd": None, "window_seconds": 18000, "parallel_tasks": 8,
 }
 
 
@@ -29,6 +29,10 @@ class AIFormatError(ValueError):
 
 
 class ExecutionBlocked(RuntimeError):
+    pass
+
+
+class ExecutionTruncated(RuntimeError):
     pass
 
 
@@ -64,19 +68,32 @@ def harness_blocker(output, error, phase, task=None):
     save_json(Path(output) / "harness_blocker.json", record)
 
 
-def require_harness_ready(output):
-    output = Path(output)
-    if (output / "harness_blocker.json").exists():
-        raise ExecutionBlocked("存在未修复的实验脚本错误，禁止执行任务")
-    audit = json.loads((output / "workflow_audit.json").read_text(encoding="utf-8"))
+_HARNESS_CACHE = {}
+
+
+def require_harness_ready(output, ttl_seconds=60.0):
+    """脚本审计与版本核对。
+
+    工具调用热路径上每次核对都要跑 git 与全量文件哈希，按输出目录缓存一小段时间，
+    语义保持"代码改动后必须重新审计"，代价从每次调用降到每分钟一次。
+    """
+    key = str(Path(output))
+    now = time.monotonic()
+    cached = _HARNESS_CACHE.get(key)
+    if cached is not None and now - cached[0] < ttl_seconds:
+        return
+    audit = json.loads((Path(output) / "workflow_audit.json").read_text(encoding="utf-8"))
     if audit.get("script_status") != "clear":
         raise ExecutionBlocked("实验脚本审计尚未通过，禁止执行任务")
     if audit["experiment_version"] != experiment_version(output):
         raise ExecutionBlocked("实验版本改变后尚未完成脚本审计，禁止执行任务")
     root = Path(__file__).resolve().parent.parent
+    if (Path(output) / "harness_blocker.json").exists():
+        raise ExecutionBlocked("存在未修复的实验脚本错误，禁止执行任务")
     for name, digest in audit["reviewed_files"].items():
         if hashlib.sha256((root / name).read_bytes()).hexdigest() != digest:
             raise ExecutionBlocked("实验脚本改变后尚未完成审计：" + name)
+    _HARNESS_CACHE[key] = (now,)
 
 
 class ProposalCheckpoint:
@@ -109,8 +126,11 @@ class ProposalCheckpoint:
                   retry_of=self.state["retry_of"] or call_id)
 
 
-VERSION_FILES = ["engine/automation_adapter.py", "engine/mcp_proxy.py", "engine/component_host.py",
+VERSION_FILES = ["engine/automation_adapter.py", "engine/activation.py", "engine/mcp_proxy.py", "engine/component_host.py",
                  "engine/component_sandbox.py", "engine/llm_client.py", "engine/gnosis_lm.py",
+                 "engine/extension_protocol.py", "engine/evolution.py", "engine/research_plan.py",
+                 "engine/research_model.py", "engine/research_evaluator.py", "engine/research_upstream.py",
+                 "engine/research_retest.py", "engine/run_research.py", "engine/service_quota.py",
                  "host/src/scoped-worker.mjs", "host/package-lock.json"]
 VERSION_POLICY = ("seed", "max_steps", "execution_output_tokens", "proposal_output_tokens",
                   "default_components", "format_retries", "task_cost_cap_usd")
@@ -185,6 +205,10 @@ class BudgetExceeded(RuntimeError):
     pass
 
 
+class ServiceWindowExceeded(BudgetExceeded):
+    """服务额度窗口暂时用满：等窗口释放后续跑，不代表实验组预算耗尽。"""
+
+
 class TaskCostExceeded(RuntimeError):
     pass
 
@@ -227,6 +251,15 @@ def _ensure_ledger(path, limit, cap=None):
             db.execute("UPDATE calls SET at=0 WHERE at IS NULL")
         if "note" not in columns:
             db.execute("ALTER TABLE calls ADD COLUMN note TEXT")
+        if "billed" not in columns:
+            db.execute("ALTER TABLE calls ADD COLUMN billed REAL")
+
+
+def beijing_peak(at=None):
+    """DeepSeek 高峰时段：北京时间周一至周五 9:00-12:00、14:00-18:00（法定节假日按工作日近似）。"""
+    import datetime
+    now = datetime.datetime.fromtimestamp(at or time.time(), datetime.timezone(datetime.timedelta(hours=8)))
+    return now.weekday() < 5 and (9 <= now.hour < 12 or 14 <= now.hour < 18)
 
 
 class Budget:
@@ -250,7 +283,7 @@ class Budget:
             ceiling, cap_value = db.execute("SELECT ceiling, cap FROM budget WHERE id=1").fetchone()
         if ceiling != limit:
             raise ValueError("预算上限与既有账本不一致")
-        if cap_value is None or ceiling > cap_value:
+        if limit is not None and (cap_value is None or ceiling > cap_value):
             raise ValueError("当前上限超出研究总预算")
 
     def connect(self):
@@ -288,7 +321,7 @@ class Budget:
         return db.execute("SELECT COALESCE(SUM(COALESCE(cost, reserved)), 0) FROM calls WHERE at > ?",
                           (now - self.window_seconds,)).fetchone()[0]
 
-    def reserve(self, phase, prompt, max_tokens):
+    def reserve(self, phase, prompt, max_tokens, guard=None, contingency_reason=None):
         tokens = len(json.dumps(prompt, ensure_ascii=False).encode()) // 3 + 1024
         amount = (tokens * self.rates["input_per_mtok"]
                   + max_tokens * self.rates["output_per_mtok"]) / 1e6
@@ -296,19 +329,21 @@ class Budget:
         now = time.time()
         with self.connect() as db:
             db.execute("BEGIN IMMEDIATE")
+            if guard is not None:
+                guard(db, amount, contingency_reason)
             spent = self._spent(db)
             limit = db.execute("SELECT ceiling FROM budget").fetchone()[0]
-            if spent + amount > limit:
+            if limit is not None and spent + amount > limit:
                 raise BudgetExceeded(f"预算终止：已计费或预留 ${spent:.6f}，本次上界 ${amount:.6f}，上限 ${limit}")
             if self.window_limit is not None:
                 window = self._window_used(db, now)
                 if window + amount > self.window_limit:
-                    raise BudgetExceeded(
+                    raise ServiceWindowExceeded(
                         f"窗口终止：{self.window_seconds // 3600} 小时内已计费或预留 ${window:.6f}，"
                         f"本次上界 ${amount:.6f}，窗口上限 ${self.window_limit}；"
                         f"阶段剩余 ${limit - spent:.6f}")
-            db.execute("INSERT INTO calls(id, phase, reserved, at) VALUES (?, ?, ?, ?)",
-                       (call_id, phase, amount, now))
+            db.execute("INSERT INTO calls(id, phase, reserved, at, note) VALUES (?, ?, ?, ?, ?)",
+                       (call_id, phase, amount, now, contingency_reason))
         return call_id
 
     def settle(self, call_id, usage):
@@ -317,9 +352,12 @@ class Budget:
         cost = ((usage.prompt_tokens - cached) * self.rates["input_per_mtok"]
                 + cached * self.rates["cache_read_per_mtok"]
                 + usage.completion_tokens * self.rates["output_per_mtok"]) / 1e6
+        # cost 按固定参照价（闲时）记账，组额度与等预算比较只用它，避免高峰时段让某一组吃亏；
+        # billed 是按北京时间高峰/闲时折算的实际扣费，只用于报告。
+        billed = cost * (self.rates.get("peak_multiplier", 1.0) if beijing_peak() else 1.0)
         with self.connect() as db:
-            db.execute("UPDATE calls SET cost=?, input_tokens=?, output_tokens=?, cached_tokens=? WHERE id=?",
-                       (cost, usage.prompt_tokens, usage.completion_tokens, cached, call_id))
+            db.execute("UPDATE calls SET cost=?, billed=?, input_tokens=?, output_tokens=?, cached_tokens=? WHERE id=?",
+                       (cost, billed, usage.prompt_tokens, usage.completion_tokens, cached, call_id))
         return cost
 
     def release(self, call_id, reason):
@@ -328,6 +366,15 @@ class Budget:
             changed = db.execute("UPDATE calls SET cost=0.0, note=? WHERE id=? AND cost IS NULL",
                                  (reason, call_id))
         return changed.rowcount == 1
+
+    def window_release_seconds(self):
+        """最早一笔在窗口内的调用离开窗口还需多少秒。"""
+        if self.window_limit is None:
+            return 0.0
+        now = time.time()
+        with self.connect() as db:
+            row = db.execute("SELECT MIN(at) FROM calls WHERE at > ?", (now - self.window_seconds,)).fetchone()
+        return 0.0 if row[0] is None else max(0.0, row[0] + self.window_seconds - now)
 
     def totals(self):
         with self.connect() as db:
@@ -345,8 +392,10 @@ class Budget:
                                         "FROM calls").fetchone()
             ceiling, cap = db.execute("SELECT ceiling, cap FROM budget WHERE id=1").fetchone()
             window = self._window_used(db, now)
-        return {"ceiling_usd": ceiling, "research_cap_usd": cap, "spent_usd": spent,
-                "unsettled_usd": pending, "remaining_usd": ceiling - spent - pending,
+            billed = db.execute("SELECT COALESCE(SUM(COALESCE(billed, cost)), 0) FROM calls").fetchone()[0]
+        return {"ceiling_usd": ceiling, "research_cap_usd": cap, "spent_usd": spent, "billed_usd": billed,
+                "unsettled_usd": pending,
+                "remaining_usd": None if ceiling is None else ceiling - spent - pending,
                 "window_limit_usd": self.window_limit, "window_seconds": self.window_seconds,
                 "window_used_usd": window,
                 "window_remaining_usd": None if self.window_limit is None else self.window_limit - window}
@@ -365,6 +414,8 @@ class UnitLibrary:
         if Path(unit_id).name != unit_id or unit_id in (".", ".."):
             raise ValueError("单元 ID 必须是单个路径名称")
         record = json.loads((self.root / unit_id / "unit.json").read_text(encoding="utf-8"))
+        from engine.activation import validate_scope
+        validate_scope(record["scope"])
         if record["component"] and (self.root / unit_id / "component.ts").read_text(encoding="utf-8") != record["source"]:
             raise ValueError("实际组件源码与知识单元版本不一致")
         return record
@@ -379,8 +430,9 @@ class UnitLibrary:
         return [u for u in active if u["id"] not in replaced]
 
     def propose(self, unit, provenance=None):
+        from engine.activation import validate_scope, HOOKS
         required = {"scope", "content", "source_task", "prediction", "component", "source", "replaces"}
-        if set(unit) != required or not isinstance(unit["scope"], list) or not unit["scope"]:
+        if not required <= set(unit) or set(unit) - required - {"hooks", "summary"} or not isinstance(unit["scope"], list) or not unit["scope"]:
             raise AIFormatError("候选单元协议错误")
         if not isinstance(unit["replaces"], list) or any(not isinstance(r, str) or not r for r in unit["replaces"]):
             raise AIFormatError("replaces 必须是单元 ID 列表")
@@ -388,10 +440,17 @@ class UnitLibrary:
             raise AIFormatError("replaces 指向不存在的单元")
         if any(not isinstance(s, str) or not s for s in unit["scope"]):
             raise AIFormatError("作用域必须使用非空字符串")
+        try:
+            validate_scope(unit["scope"])
+        except ValueError as error:
+            raise AIFormatError(str(error)) from error
+        if "hooks" in unit and (not isinstance(unit["hooks"], list) or not unit["hooks"]
+                                or any(hook not in HOOKS for hook in unit["hooks"])):
+            raise AIFormatError("候选只能使用已登记的扩展位置")
         if any(not isinstance(unit[k], str) or not unit[k] for k in ("content", "source_task", "prediction")):
             raise AIFormatError("单元内容、来源和预测必须使用非空字符串")
-        if unit["component"] not in (None, "T", "C", "W"):
-            raise AIFormatError("组件必须使用 null、T、C 或 W 协议")
+        if unit["component"] not in (None, "T", "C", "W", "E"):
+            raise AIFormatError("组件必须使用 null、T、C、W 或 E 协议")
         if bool(unit["component"]) != bool(unit["source"]):
             raise AIFormatError("组件与源码必须同时提供")
         unit_id = fingerprint(unit)[:20]

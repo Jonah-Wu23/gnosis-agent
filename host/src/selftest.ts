@@ -1,5 +1,6 @@
 // 端到端自测：spawn 真实 main.ts 子进程，用 vscode-jsonrpc 客户端逐条演练契约 §3 的方法。
 import { spawn } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -14,7 +15,11 @@ const HOST_DIR = fileURLToPath(new URL('..', import.meta.url))
 const REPO_ROOT = dirname(HOST_DIR)
 const TMP_DIR = join(HOST_DIR, '.tmp_selftest')
 const BASE_V2_DIR = join(REPO_ROOT, 'candidates', 'base_v2')
-const BASE_V1_TEMPLATE = join(REPO_ROOT, 'candidates', 'base', 'W', 'instructions.txt')
+
+// W 冻结参考：先导归档 candidates/base/W/instructions.txt 的字节摘要。归档目录不入版本，
+// 摘要固化在自测里，干净检出也能复核 w.template 与冻结模板逐字节一致。
+const FROZEN_TEMPLATE_SHA256 = 'c41f7852217d46586047a38f68e88b827cb9dcbe624e9651f9db8301547a534b'
+const FROZEN_TEMPLATE_BYTES = 11350
 
 const COMPONENT_FILE = { W: 'workflow.ts', T: 'wrapper.ts', C: 'context.ts' } as const
 type Key = keyof typeof COMPONENT_FILE
@@ -186,10 +191,11 @@ try {
     `load 返回的 W 导出清单不对：${JSON.stringify(loaded.exports.W)}`,
   )
   const templateResult = await request<{ template: string }>('w.template', { candidate_id: 'base_v2' })
-  const referenceBytes = readFileSync(BASE_V1_TEMPLATE)
+  const templateBytes = Buffer.from(templateResult.template, 'utf8')
   check(
-    Buffer.from(templateResult.template, 'utf8').equals(referenceBytes),
-    'w.template 必须与 candidates/base/W/instructions.txt 逐字节一致',
+    templateBytes.length === FROZEN_TEMPLATE_BYTES &&
+      createHash('sha256').update(templateBytes).digest('hex') === FROZEN_TEMPLATE_SHA256,
+    `w.template 必须与冻结的参考模板逐字节一致，实际 ${templateBytes.length} 字节`,
   )
   const formatted = await request<{ text: string; trace?: Record<string, unknown> }>(
     't.formatObservation',

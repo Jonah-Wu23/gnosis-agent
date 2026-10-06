@@ -3,6 +3,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 from openai import OpenAI
+from engine.scoped_units import require_model_access
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -22,6 +23,7 @@ client = OpenAI(
 
 def chat(messages, *, reasoning_effort=REASONING_EFFORT, **params):
     """发一次 Chat Completions 请求，返回原始响应对象。"""
+    require_model_access()
     return client.chat.completions.create(
         model=MODEL,
         messages=messages,

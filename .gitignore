@@ -10,3 +10,19 @@ scratch/
 
 # 凭证
 .env
+.env.*
+!.env.example
+config/runtime.json
+*.key
+*.pem
+*.p12
+
+# 历史实验与运行状态
+archive/
+state/
+experiments/
+
+# 宿主校验临时文件
+host/.tmp_validate/
+host/.tmp_selftest/
+.offline_checks/

@@ -1,0 +1,263 @@
+{
+  "seed": 100,
+  "domains": {
+    "sales": [
+      "sales.linkedin_profile_enrichment",
+      "sales.chatgpt_contract_summary",
+      "sales.slack_deal_notification",
+      "sales.sheets_reconciliation",
+      "sales.mark_vip_emails_read"
+    ],
+    "operations": [
+      "operations.facebook_roas_monitoring",
+      "operations.purchase_order_three_way_match",
+      "operations.twilio_afterhours_incident",
+      "operations.drive_slack_dock_schedule",
+      "operations.calendar_slack_training"
+    ],
+    "hr": [
+      "hr.airtable_learning_path_assignment",
+      "hr.promotion_announcement",
+      "hr.airtable_skills_matrix",
+      "hr.policy_update_distribution",
+      "hr.mandatory_meeting_compliance"
+    ],
+    "marketing": [
+      "marketing.customer_milestone",
+      "marketing.landing_page_conversion",
+      "marketing.competitive_response_plan",
+      "marketing.seasonal_campaign",
+      "marketing.content_syndication"
+    ],
+    "support": [
+      "support.gorgias_channel_consolidation",
+      "support.hiver_coaching_pipeline",
+      "support.freshdesk_sla_monitoring",
+      "support.intercom_freshdesk_escalation",
+      "support.gorgias_freshdesk_migration"
+    ],
+    "finance": [
+      "finance.prepaid_amortization",
+      "finance.project_profitability",
+      "finance.invoice_file_organization",
+      "finance.qb_invoice_from_orders",
+      "finance.xero_credit_allocation"
+    ]
+  },
+  "contracts": {
+    "sales.linkedin_profile_enrichment": [
+      "gmail",
+      "linkedin",
+      "salesforce"
+    ],
+    "sales.chatgpt_contract_summary": [
+      "chatgpt",
+      "docusign",
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "salesforce",
+      "slack"
+    ],
+    "sales.slack_deal_notification": [
+      "gmail",
+      "salesforce",
+      "slack"
+    ],
+    "sales.sheets_reconciliation": [
+      "google_drive",
+      "google_sheets",
+      "salesforce"
+    ],
+    "sales.mark_vip_emails_read": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "salesforce"
+    ],
+    "operations.facebook_roas_monitoring": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "operations.purchase_order_three_way_match": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "monday"
+    ],
+    "operations.twilio_afterhours_incident": [
+      "confluence",
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "jira",
+      "twilio"
+    ],
+    "operations.drive_slack_dock_schedule": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "operations.calendar_slack_training": [
+      "google_calendar",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "hr.airtable_learning_path_assignment": [
+      "airtable",
+      "gmail",
+      "google_drive",
+      "google_sheets"
+    ],
+    "hr.promotion_announcement": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "hr.airtable_skills_matrix": [
+      "airtable",
+      "google_drive",
+      "google_sheets"
+    ],
+    "hr.policy_update_distribution": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "hr.mandatory_meeting_compliance": [
+      "gmail",
+      "google_drive",
+      "google_sheets"
+    ],
+    "marketing.customer_milestone": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "marketing.landing_page_conversion": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "marketing.competitive_response_plan": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "hubspot",
+      "slack"
+    ],
+    "marketing.seasonal_campaign": [
+      "buffer",
+      "gmail"
+    ],
+    "marketing.content_syndication": [
+      "buffer",
+      "gmail",
+      "google_drive",
+      "google_sheets"
+    ],
+    "support.gorgias_channel_consolidation": [
+      "google_drive",
+      "google_sheets",
+      "gorgias"
+    ],
+    "support.hiver_coaching_pipeline": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "hiver"
+    ],
+    "support.freshdesk_sla_monitoring": [
+      "freshdesk",
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "jira",
+      "slack"
+    ],
+    "support.intercom_freshdesk_escalation": [
+      "freshdesk",
+      "google_drive",
+      "google_sheets",
+      "intercom",
+      "slack"
+    ],
+    "support.gorgias_freshdesk_migration": [
+      "freshdesk",
+      "google_drive",
+      "google_sheets",
+      "gorgias",
+      "slack"
+    ],
+    "finance.prepaid_amortization": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "slack"
+    ],
+    "finance.project_profitability": [
+      "gmail",
+      "google_drive",
+      "google_sheets"
+    ],
+    "finance.invoice_file_organization": [
+      "gmail",
+      "google_drive",
+      "google_sheets"
+    ],
+    "finance.qb_invoice_from_orders": [
+      "gmail",
+      "google_drive",
+      "google_sheets",
+      "quickbooks"
+    ],
+    "finance.xero_credit_allocation": [
+      "gmail",
+      "google_drive",
+      "slack",
+      "xero"
+    ]
+  },
+  "task_contracts": {
+    "sales.linkedin_profile_enrichment": "299785dee42e42682b6c5cc10794943dffed8672071414d6a7ec9327f97e8fa3",
+    "sales.chatgpt_contract_summary": "262852fe117e4dcb04e8c079595f52001554bd47d55e59ab2221c25382a4ca1a",
+    "sales.slack_deal_notification": "04c0e1accdf8d2a7d7693e5862a81b8fc3391bd50492c6e19ca70d43db90eba7",
+    "sales.sheets_reconciliation": "012e753eb72b94c791845db81fcb56d4a9adfdecacb6785783c3e4ac8972a2c8",
+    "sales.mark_vip_emails_read": "665384cba20aab3722538d8f968264cf82ab3b43fdfa4383097ba1fbda01293f",
+    "operations.facebook_roas_monitoring": "e319bb58e3c5d25babfdebc2a67e50c3f936a1b1deede4f4cbd4ba2f6d2882cb",
+    "operations.purchase_order_three_way_match": "99d8ee60b289e2f3c4d8af5fcfd7b2e715cfe5dd979c47b5344c7b1f74918cbc",
+    "operations.twilio_afterhours_incident": "2686d76850496006102b7a12fb00d68f7b02e3607da59c5dec86f8fe05b2e2fa",
+    "operations.drive_slack_dock_schedule": "35888ffbfd9184fe19f077f149a67e1c3336888795807e91a35e532ac4aaf4ca",
+    "operations.calendar_slack_training": "92bd63f80bffddc480411e8eb3128d69508dcc568a754b52ee7cc4d36d55c291",
+    "hr.airtable_learning_path_assignment": "3da754b39565e042957dcac4d3c35ed494bc21bc70abd09ba4409decb5f18775",
+    "hr.promotion_announcement": "2c800c69e72e1b56c89fc00994a78bb1c1c24184ded0c47d0b162a747b86ee63",
+    "hr.airtable_skills_matrix": "47f4620fea320b3912baffe4270fac542ddad57a36e6f21fbd7a5a794ad44f4d",
+    "hr.policy_update_distribution": "23f292d3092bfece229bc5a16422f75418abaf20ff92d7cb39834d5b4e2be531",
+    "hr.mandatory_meeting_compliance": "f542b4145049d83688e7f14b2d6a651b6eeff468bd2dcdf98c6986e031a8b701",
+    "marketing.customer_milestone": "937ffafdbfd8450572e879597522ecb9278b0ba7fe4cd690b4c5b1be2321c4a1",
+    "marketing.landing_page_conversion": "b952774dec4db4c157d4e170bf4d70565e7483bde47796879737611c121ebc88",
+    "marketing.competitive_response_plan": "9d6bcd56cafbc006dc2cf932dc359a4accaaec9bee4ff9c832ba6a5a1f3edf23",
+    "marketing.seasonal_campaign": "b802b3de8ff0175450585d1964468972a044b213df6043640347468de8926487",
+    "marketing.content_syndication": "2dbccbf0d89743356e0b0fc32c4588f21463cd99487dbdbdedbed0fb3a28ba18",
+    "support.gorgias_channel_consolidation": "2475da59db1216226a95d18ca8de550f0c15a49db78a6bdf9b077838c658be89",
+    "support.hiver_coaching_pipeline": "58306eb20026740c3a65d63bbabf69f5bdf2670e55c80ab32d52c654fbd1dc94",
+    "support.freshdesk_sla_monitoring": "d2715d1c3691bd25f358b42b8a070e797f20579b07414cbac946055ec31ace9e",
+    "support.intercom_freshdesk_escalation": "09771667ad1973a062cff8bccbb2eeb832d936307c3c3065e66a4ececa64dcd0",
+    "support.gorgias_freshdesk_migration": "660614e6ad52ea9b9476696dbb6ce072ae237c30d6aa39dcc130cf0734709fa6",
+    "finance.prepaid_amortization": "d46ac3c2ceb3a5ac278841b053dbddb7af66e9f7843c509e3d7877d2ca2f7451",
+    "finance.project_profitability": "ab09c5eefdb31ea21b37b6f09048b1a20f31e9d3eec72e47b7f303a85bcb3120",
+    "finance.invoice_file_organization": "21c24db3e7058f14089e5950f6bf920d831903978687c1edc143d22572e10090",
+    "finance.qb_invoice_from_orders": "ebb10b623de6c76379f6e1bd98a7b2fae56d26d68d312fc50f2a0f121f9201d1",
+    "finance.xero_credit_allocation": "fe708a0986ce6102d2d10e1d3063f21896a2aa161f1769ae5468f8938634a4ce"
+  },
+  "automation_commit": "4a8e1061254004d9dac807054eed33fad7d1ff14",
+  "ace_commit": "82709de050e1db6e6ef2f07bcb0393560b94992a"
+}

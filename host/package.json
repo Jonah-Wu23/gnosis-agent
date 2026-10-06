@@ -6,10 +6,15 @@
   "description": "GNOSIS Agent host runtime: cordis component container for workflow / tool / context / skill plugins",
   "scripts": {
     "boot": "tsx src/boot.ts",
+    "start": "tsx src/main.ts",
+    "selftest": "tsx src/selftest.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "cordis": "4.0.0-rc.10"
+    "cordis": "4.0.0-rc.10",
+    "quickjs-emscripten": "0.32.0",
+    "typescript-legacy": "npm:typescript@5.9.3",
+    "vscode-jsonrpc": "^8.2.1"
   },
   "devDependencies": {
     "@types/node": "24.19.1",

@@ -42,7 +42,7 @@
 | typescript | 7.0.2 | host/ |
 | tsx | 4.23.15 | host/ |
 
-固定依据写在 `engine/requirements.txt`、`host/package.json`，细节见 `docs/setup/` 下三份文档（appworld-gepa.md、llm-smoke.md、cordis.md）。
+固定依据写在 `engine/requirements.txt`、`host/package.json`，细节见 `docs/setup/appworld-gepa.md` 与 `docs/setup/cordis.md`；模型接入的历史记录见 [llm-smoke.md](../../archive/2026-10-06/documents/setup/llm-smoke.md)。
 
 ## 3. 已验证链路（附证据强度）
 

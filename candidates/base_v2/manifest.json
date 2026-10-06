@@ -1,0 +1,8 @@
+{
+ "interface_version": "2",
+ "files": {
+  "C/context.ts": "19bdf24feca0667ece96998e9fffc7e3a9c7d137b2ed03bf57f50356ea695e27",
+  "T/wrapper.ts": "caa8d56564f2a5e377bb5ca8329659d96d8bfed3c9a0f6a664d0550f32381d87",
+  "W/workflow.ts": "58056adcfd844d112f899a67d1f8e495cdcecc4c90657a51ec69fec9b2f2c6b2"
+ }
+}

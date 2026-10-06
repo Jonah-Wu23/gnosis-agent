@@ -1,0 +1,3 @@
+# 原装环境使用 scratch/AutomationBench/uv.lock 固定依赖。
+scipy==1.18.1
+python-lsp-jsonrpc==1.1.2

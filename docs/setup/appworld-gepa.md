@@ -97,7 +97,7 @@ Downloading data. This will take around 15 seconds.
 Data prepared at: ./data
 ```
 
-下载后 `data/` 含 `api_docs`、`base_dbs`、`datasets`、`tasks`、`version.txt`。`data/datasets/train.txt` 有 89 个任务。
+下载后 `data/` 含 `api_docs`、`base_dbs`、`datasets`、`tasks`、`version.txt`。`load_task_ids("train")` 实测 90 个任务（阶段二复核；train.txt 行数口径以 API 为准）。
 
 ## 三、官方验证结果
 
@@ -137,7 +137,7 @@ Passed 147/147 tasks
 VERIFY_TASKS_RETURN=True
 ```
 
-147 = 89 个 train 任务 + 58 个 dev 任务，全部通过。
+147 = 90 个 train 任务 + 57 个 dev 任务，全部通过。
 
 ## 四、评分链路无 token 验证（已完整走通）
 

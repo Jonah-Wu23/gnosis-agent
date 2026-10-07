@@ -306,7 +306,7 @@ class RepairController:
         tasks = {}
         pairs = [(task, label, version) for task in self.plan["checkpoint"]
                  for label, version in (("early", early), ("current", current))]
-        done = await asyncio.gather(*(self.evaluator.execute(self.workspace, version, task, self.arm, "evaluation", "heldout",
+        done = await asyncio.gather(*(self.evaluator.execute(self.workspace, version, task, self.arm, "evaluation", "checkpoint",
                             execution_id=fingerprint([self.arm, "checkpoint", label, task]), kind="checkpoint")
                                       for task, label, version in pairs))
         for (task, label, version), record in zip(pairs, done, strict=True):
@@ -457,6 +457,9 @@ async def train_ace(plan, workspace, evaluator, model):
     return workspace.freeze()
 
 
+HELDOUT_REPEATS = 5
+
+
 def phase_costs(meter):
     """按 用途/实验组/阶段 汇总真实账本费用，未结算的预留一并计入。"""
     costs = {}
@@ -479,6 +482,28 @@ def arm_costs(costs, arm):
                          + costs.get(("evaluation", arm, "retest"), 0.0)}
 
 
+def arm_billed_costs(meter, arm):
+    billed = {"learning_and_selection_billed_usd": 0.0, "checkpoint_billed_usd": 0.0,
+              "heldout_billed_usd": 0.0, "retest_billed_usd": 0.0}
+    conn = meter.meter.connect() if hasattr(meter, "meter") else sqlite3.connect(RESEARCH_LEDGER, timeout=60)
+    with conn as db:
+        rows = db.execute("SELECT phase, SUM(COALESCE(billed, cost)) FROM calls GROUP BY phase").fetchall()
+    for phase, total_billed in rows:
+        parts = phase.split("/")
+        if len(parts) >= 2 and parts[1] == arm:
+            bucket = parts[0]
+            kind = parts[2] if len(parts) > 2 else ""
+            if bucket in ("learning", "selection"):
+                billed["learning_and_selection_billed_usd"] += total_billed or 0.0
+            elif bucket == "evaluation" and kind == "checkpoint":
+                billed["checkpoint_billed_usd"] += total_billed or 0.0
+            elif bucket == "evaluation" and kind in ("execution", "heldout"):
+                billed["heldout_billed_usd"] += total_billed or 0.0
+            elif bucket == "evaluation" and kind == "retest":
+                billed["retest_billed_usd"] += total_billed or 0.0
+    return billed
+
+
 def termination_counts(rows):
     """每组的真实终止原因分布，预算触顶、截断与服务失败都要看得见。"""
     counts = {}
@@ -489,22 +514,37 @@ def termination_counts(rows):
 
 
 def amortized_comparison(plan, gnosis_rows, repeat_rows, gnosis_total_usd):
-    """按实际评估任务数比较两组累计摊销成本，并核对等美元规则是否真的成立。
+    """按实际评估任务数（30 道留出题）比较两组累计摊销成本。
 
-    两组在留出评估上花掉的钱都来自真实账本：GNOSIS 组把美元前置花在学习与验证，
-    重复执行组把同样的美元花在同一道题的反复执行上。交叉点由两条实测曲线给出，
-    同时报告两组的总费用差与通过率差，避免只有摊销口径一个读数。
+    统一比较单位为任务（task），分母为评估任务数（1..30）。
+    GNOSIS 组把费用花在前置开发与每题 5 次独立重复评估；
+    重复执行组把对等的单题配额花在同一题的连续修改尝试上。
     """
-    tasks = len(plan["heldout"])
+    tasks = plan["heldout"]
+    task_gnosis_costs = {t: 0.0 for t in tasks}
+    for r in gnosis_rows:
+        if r.get("task") in task_gnosis_costs:
+            task_gnosis_costs[r["task"]] += r.get("cost_usd", 0.0)
+
+    repeat_costs = {r["task"]: r.get("total_cost_usd", r.get("cost_usd", 0.0)) for r in repeat_rows}
+    gnosis_dev_cost = gnosis_total_usd - sum(task_gnosis_costs.values())
+
     counts = []
-    for count in range(1, tasks + 1):
-        gnosis = (gnosis_total_usd - sum(row["cost_usd"] for row in gnosis_rows[count:])) / count
-        repeat = sum(row.get("total_cost_usd", row["cost_usd"]) for row in repeat_rows[:count]) / count
-        counts.append({"evaluation_tasks": count, "gnosis_amortized_usd": gnosis, "repeat_amortized_usd": repeat})
+    cum_gnosis_eval = 0.0
+    cum_repeat = 0.0
+    for count, task in enumerate(tasks, 1):
+        cum_gnosis_eval += task_gnosis_costs.get(task, 0.0)
+        cum_repeat += repeat_costs.get(task, 0.0)
+        gnosis_amortized = (gnosis_dev_cost + cum_gnosis_eval) / count
+        repeat_amortized = cum_repeat / count
+        counts.append({"evaluation_tasks": count, "task": task,
+                       "gnosis_amortized_usd": gnosis_amortized,
+                       "repeat_amortized_usd": repeat_amortized})
     crossover = next((row["evaluation_tasks"] for row in counts if row["gnosis_amortized_usd"] <= row["repeat_amortized_usd"]), None)
-    gnosis_spent = sum(row["cost_usd"] for row in gnosis_rows)
-    repeat_spent = sum(row.get("total_cost_usd", row["cost_usd"]) for row in repeat_rows)
-    return {"gnosis_total_usd": gnosis_total_usd, "heldout_tasks": tasks,
+    gnosis_spent = sum(task_gnosis_costs.values())
+    repeat_spent = sum(repeat_costs.values())
+    return {"gnosis_total_usd": gnosis_total_usd, "gnosis_development_usd": gnosis_dev_cost,
+            "gnosis_heldout_usd": gnosis_spent, "heldout_tasks": len(tasks),
             "break_even_tasks": crossover,
             "budget_parity": {"gnosis_usd": gnosis_total_usd, "repeat_usd": repeat_spent,
                               "difference_usd": gnosis_total_usd - repeat_spent,
@@ -605,8 +645,13 @@ async def research_once():
     try:
         for arm in ARMS[:-1]:
             workspace = workspaces[arm]
-            rows = list(await asyncio.gather(*(evaluator.execute(workspace, workspace.state["frozen"], task, arm, "evaluation", "heldout",
-                                             execution_id=fingerprint([arm, "heldout", task])) for task in plan["heldout"])))
+            frozen_version = workspace.state["frozen"]
+            pairs = [(task, repeat) for task in plan["heldout"] for repeat in range(HELDOUT_REPEATS)]
+            rows = list(await asyncio.gather(*(evaluator.execute(
+                workspace, frozen_version, task, arm, "evaluation", "heldout", repeat=repeat,
+                execution_id=fingerprint([arm, "heldout", frozen_version, task, repeat]),
+                kind="execution"
+            ) for task, repeat in pairs)))
             results[arm] = rows
             save_json(OUT / "heldout" / (arm + ".json"), rows)
         retest = await retest_arms(plan, version, evaluator, meter)
@@ -647,30 +692,76 @@ async def research_once():
     summary = {"experiment_version": version, "plan_identity": plan["identity"], "baseline": gate,
                "arms": {}, "budget": meter.state(), "stopping": stopping,
                "retest": retest,
-               "baseline_note": "固定 Agent 基线覆盖 30 道开发题；各组通过率在 30 道最终留出题上计算"}
+               "baseline_note": "固定 Agent 基线覆盖 30 道开发题；各组通过率在 30 道最终留出题上计算（4 组各 5 次独立重复评估）"}
     for arm, rows in results.items():
         if not rows:
             continue
-        cost = sum(r.get("total_cost_usd", r["cost_usd"]) for r in rows)
         arm_cost = arm_costs(costs, arm)
+        billed_cost = arm_billed_costs(meter, arm)
         development = arm_cost["development_usd"] if arm in ARM_LEARNING_LIMITS else 0.0
         comparisons = workspaces[arm].state.get("comparisons", [])
-        summary["arms"][arm] = {"strict_pass_rate": sum(r["success"] for r in rows) / len(rows),
-                                "partial_credit": sum(r["partial_credit"] for r in rows) / len(rows),
-                                "evaluation_tasks": len(rows), "evaluation_cost_usd": cost,
-                                "learning_and_selection_cost_usd": arm_cost["learning_and_selection_usd"],
-                                "checkpoint_cost_usd": arm_cost["checkpoint_usd"],
-                                "retest_cost_usd": arm_cost["retest_usd"],
-                                "development_cost_usd": development,
-                                "amortized_cost_per_task_usd": (cost + development) / len(rows),
-                                "termination_counts": termination_counts(rows),
-                                "effective_evolutions": sum(c["decision"] == "accepted" for c in comparisons),
-                                "comparisons": len(comparisons),
-                                "validation_executed": sum(c.get("executed_count", 0) for c in comparisons),
-                                "validation_reused": sum(c.get("reused_count", 0) for c in comparisons),
-                                "stop": workspaces[arm].state.get("stop"),
-                                "frozen_units": len(workspaces[arm].load_version(workspaces[arm].state["frozen"])),
-                                "checkpoint": workspaces[arm].state.get("checkpoint")}
+
+        if arm != "repeat":
+            task_runs = {}
+            for r in rows:
+                task_runs.setdefault(r["task"], []).append(r)
+            per_task = {}
+            for task, runs in task_runs.items():
+                per_task[task] = {
+                    "success_count": sum(r["success"] for r in runs),
+                    "completed_count": len(runs),
+                    "all_passed": all(r["success"] for r in runs),
+                    "sources": [r.get("original_experiment_version", r.get("experiment_version")) for r in runs],
+                    "cost_usd": sum(r.get("cost_usd", 0.0) for r in runs),
+                }
+            all_pass_tasks = sum(1 for p in per_task.values() if p["all_passed"])
+            eval_cost = sum(r.get("cost_usd", 0.0) for r in rows)
+            summary["arms"][arm] = {
+                "strict_pass_rate": sum(r["success"] for r in rows) / len(rows),
+                "partial_credit": sum(r["partial_credit"] for r in rows) / len(rows),
+                "total_executions": len(rows),
+                "evaluation_tasks": len(task_runs),
+                "pass_all_5_ratio": all_pass_tasks / len(task_runs) if task_runs else 0.0,
+                "pass_all_5_tasks": all_pass_tasks,
+                "evaluation_cost_usd": eval_cost,
+                "evaluation_billed_usd": billed_cost.get("heldout_billed_usd", eval_cost),
+                "learning_and_selection_cost_usd": arm_cost["learning_and_selection_usd"],
+                "learning_and_selection_billed_usd": billed_cost.get("learning_and_selection_billed_usd", arm_cost["learning_and_selection_usd"]),
+                "checkpoint_cost_usd": arm_cost["checkpoint_usd"],
+                "retest_cost_usd": arm_cost["retest_usd"],
+                "development_cost_usd": development,
+                "amortized_cost_per_task_usd": (eval_cost + development) / len(task_runs) if task_runs else 0.0,
+                "termination_counts": termination_counts(rows),
+                "effective_evolutions": sum(c["decision"] == "accepted" for c in comparisons),
+                "comparisons": len(comparisons),
+                "validation_executed": sum(c.get("executed_count", 0) for c in comparisons),
+                "validation_reused": sum(c.get("reused_count", 0) for c in comparisons),
+                "per_task": per_task,
+                "stop": workspaces[arm].state.get("stop"),
+                "frozen_units": len(workspaces[arm].load_version(workspaces[arm].state["frozen"])),
+                "checkpoint": workspaces[arm].state.get("checkpoint"),
+            }
+        else:
+            cost = sum(r.get("total_cost_usd", r["cost_usd"]) for r in rows)
+            per_task = {
+                r["task"]: {
+                    "success": r["success"],
+                    "attempts": r.get("attempts", 1),
+                    "total_cost_usd": r.get("total_cost_usd", r["cost_usd"]),
+                    "sources": [r.get("original_experiment_version", r.get("experiment_version"))],
+                } for r in rows
+            }
+            summary["arms"][arm] = {
+                "strict_pass_rate": sum(r["success"] for r in rows) / len(rows),
+                "partial_credit": sum(r["partial_credit"] for r in rows) / len(rows),
+                "evaluation_tasks": len(rows),
+                "evaluation_cost_usd": cost,
+                "evaluation_billed_usd": billed_cost.get("heldout_billed_usd", cost),
+                "amortized_cost_per_task_usd": cost / len(rows) if rows else 0.0,
+                "termination_counts": termination_counts(rows),
+                "per_task": per_task,
+                "stop": workspaces[arm].state.get("stop"),
+            }
     if results.get("gnosis") and repeat_rows:
         summary["amortized_comparison"] = amortized_comparison(plan, results["gnosis"], repeat_rows, gnosis_total)
     summary["repeat_attempt_terminations"] = termination_counts(repeat_attempts)

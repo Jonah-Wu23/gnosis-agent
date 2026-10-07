@@ -5,7 +5,7 @@ from engine.evolution import paired_selection
 
 
 async def run_mechanism(records, after, plan, tasks, repeats, execute, label):
-    executed, reused, cost, outcomes, reused_outcomes = [], [], 0.0, {}, {}
+    executed, reused, executed_keys, reused_keys, cost, outcomes, reused_outcomes = [], [], [], [], 0.0, {}, {}
 
     async def one(base, item):
         return reuse_evidence(base, after, item) if not item["affected"] else await execute(base["task"], base["repeat"], label)
@@ -14,14 +14,17 @@ async def run_mechanism(records, after, plan, tasks, repeats, execute, label):
         key = base["task"] + "#" + str(base["repeat"])
         if not item["affected"]:
             reused.append(base["task"])
+            reused_keys.append(key)
             reused_outcomes[key] = bool(record["success"])
         else:
             executed.append(base["task"])
+            executed_keys.append(key)
             cost += record["cost_usd"]
         outcomes[key] = bool(record["success"])
     comparison = paired_selection(records, candidate, tasks, repeats)
     return {"decision": comparison["decision"], "wins": comparison["wins"], "losses": comparison["losses"],
             "p_value": comparison["p_value"], "executed_tasks": executed, "reused_tasks": reused,
+            "executed_keys": executed_keys, "reused_keys": reused_keys,
             "executed_count": len(executed), "reused_count": len(reused), "cost_usd": cost,
             "outcomes": outcomes, "reused_outcomes": reused_outcomes}
 

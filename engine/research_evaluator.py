@@ -58,8 +58,11 @@ class ResearchEvaluator:
     async def execute_one(self, workspace, version, task, arm, bucket, role, repeat,
                           execution_id, revision, task_cost_cap, kind):
         require_model_access()
-        allowed = self.plan["heldout"] + self.plan["checkpoint"] if role == "heldout" else self.plan["search"] + self.plan["selection"]
-        if task not in allowed:
+        role_map = {"learning": self.plan["search"], "selection": self.plan["selection"],
+                    "checkpoint": self.plan["checkpoint"], "heldout": self.plan["heldout"]}
+        if role not in role_map:
+            raise PermissionError("未知的执行角色：" + str(role))
+        if task not in role_map[role]:
             raise PermissionError("任务不属于该执行角色的固定集合")
         units = workspace.load_version(version)
         execution_id = execution_id or uuid.uuid4().hex

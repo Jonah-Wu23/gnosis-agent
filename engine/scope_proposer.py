@@ -80,8 +80,8 @@ def learning_view(record):
 def propose(record, library, budget, ace_root, previous_unit=None, failure=None, learning_records=(), scope_records=(), repair_root=None, components=None, checkpoint=None):
     if components is None:
         components = POLICY["default_components"]
-    if any(r.get("learning_role") == "heldout" for r in scope_records):
-        raise PermissionError("留出执行记录禁止用于改进使用范围")
+    if any(r.get("learning_role") in ("heldout", "checkpoint") for r in scope_records):
+        raise PermissionError("留出与中途检查执行记录禁止用于改进使用范围")
     client.max_retries = 0
     output = budget.output
     version = experiment_version(output)

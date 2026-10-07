@@ -143,8 +143,10 @@ class EvolutionWorkspace:
         if record["experiment_version"] != self.experiment_version:
             raise ValueError("执行证据程序版本错误")
         self.load_version(record["version"])
-        if record["learning_role"] == "heldout":
-            raise PermissionError("最终留出证据禁止进入修复工作区")
+        if record["learning_role"] in ("heldout", "checkpoint"):
+            raise PermissionError("最终留出与中途检查证据禁止进入修复工作区")
+        if record["learning_role"] not in ("learning", "selection"):
+            raise PermissionError("未授权执行证据禁止进入修复工作区")
         if type(record["success"]) is not bool:
             raise ValueError("执行证据必须使用严格二元评分")
         append_record(self.root / "executions.jsonl", record)

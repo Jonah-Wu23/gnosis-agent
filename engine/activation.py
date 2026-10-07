@@ -74,7 +74,7 @@ def validation_plan(before, after, records, experiment_version, global_validatio
         first = next((event for event in trace if any(activates(u, event) for u in changes)), None)
         affected = bool(changes) and (global_validation or global_scope or not reusable or first is not None)
         # 当前 AutomationBench 接入层没有完整恢复模型与环境前缀的接口，受影响执行从头运行。
-        result.append({"task": record["task"], "affected": affected,
+        result.append({"task": record["task"], "repeat": record.get("repeat", 0), "affected": affected,
                        "first_boundary": first["index"] if first else None,
                        "restart": "task_start" if affected else None,
                        "reason": "global_validation" if global_validation else "global_scope" if global_scope else

@@ -231,11 +231,19 @@ def retry_delay(attempt, error=None):
     return max(base, retry_after_seconds(headers.get("retry-after")))
 
 
+def is_retryable_sqlite_error(error):
+    code = getattr(error, "sqlite_errorcode", None)
+    return code is not None and (code & 0xff) in (sqlite3.SQLITE_BUSY, sqlite3.SQLITE_LOCKED)
+
+
 def _ensure_ledger(path, limit, cap=None):
     # 旧账本缺少的列就地补齐。历史请求没有时间戳，记 0 使其落在任何 5 小时窗口之外。
-    path = Path(path)
+    path = Path(path).resolve()
     path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(path, timeout=60) as db:
+        db.execute("PRAGMA busy_timeout = 60000")
+        db.execute("PRAGMA journal_mode = WAL")
+        db.execute("PRAGMA synchronous = NORMAL")
         db.execute("CREATE TABLE IF NOT EXISTS budget (id INTEGER PRIMARY KEY, ceiling REAL)")
         db.execute("INSERT OR IGNORE INTO budget(id, ceiling) VALUES (1, ?)", (limit,))
         if "cap" not in {row[1] for row in db.execute("PRAGMA table_info(budget)")}:
@@ -272,7 +280,7 @@ class Budget:
 
     def __init__(self, path, limit, rates=None, output=None, window_limit=None,
                  window_seconds=18000, cap=None):
-        self.path = Path(path)
+        self.path = Path(path).resolve()
         self.output = Path(output) if output is not None else self.path.parent
         self.rates = rates or {"input_per_mtok": 0.15, "output_per_mtok": 0.6,
                                "cache_read_per_mtok": 0.003}
@@ -287,32 +295,86 @@ class Budget:
             raise ValueError("当前上限超出研究总预算")
 
     def connect(self):
-        return sqlite3.connect(self.path, timeout=60)
+        conn = sqlite3.connect(self.path, timeout=60)
+        conn.execute("PRAGMA busy_timeout = 60000")
+        conn.execute("PRAGMA synchronous = NORMAL")
+        return conn
+
+    def _run_with_retry(self, action, write=True, max_retries=5):
+        last_error = None
+        for attempt in range(max_retries):
+            conn = None
+            try:
+                conn = self.connect()
+                with conn:
+                    conn.execute("BEGIN IMMEDIATE" if write else "BEGIN")
+                    return action(conn)
+            except sqlite3.OperationalError as e:
+                last_error = e
+                if not is_retryable_sqlite_error(e):
+                    raise
+                if attempt == max_retries - 1:
+                    raise RuntimeError(
+                        f"账本有界重试已耗尽（{max_retries} 次），操作终止："
+                        f"{getattr(e, 'sqlite_errorname', 'OperationalError')}"
+                        f"(code={getattr(e, 'sqlite_errorcode', 'N/A')}): {e}"
+                    ) from e
+                error_name = getattr(e, "sqlite_errorname", type(e).__name__)
+                error_code = getattr(e, "sqlite_errorcode", "N/A")
+                delay = 0.05 * (2 ** (attempt % 4))
+                sys.stderr.write(
+                    f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [Budget] 账本锁竞争重试 "
+                    f"({attempt + 1}/{max_retries}): {error_name}(code={error_code}) - {e}；等待 {delay:.2f}s\n"
+                )
+                time.sleep(delay)
+            finally:
+                if conn is not None:
+                    conn.close()
+        raise last_error
 
     @classmethod
     def change_limit(cls, path, previous, new, reason, cap=None):
         if new <= 0 or not reason:
             raise ValueError("预算调整需要有效上限和授权理由")
-        _ensure_ledger(path, previous, cap)
-        with sqlite3.connect(path, timeout=60) as db:
-            db.execute("BEGIN IMMEDIATE")
-            spent = db.execute("SELECT COALESCE(SUM(COALESCE(cost, reserved)), 0) FROM calls").fetchone()[0]
-            if new < spent:
-                raise ValueError("新预算低于已计费和预留费用")
-            cap_value = db.execute("SELECT cap FROM budget WHERE id=1").fetchone()[0]
-            if cap_value is None or new > cap_value:
-                raise ValueError("新上限超出研究总预算")
-            changed = db.execute("UPDATE budget SET ceiling=? WHERE id=1 AND ceiling=?", (new, previous))
-            if changed.rowcount != 1:
-                raise ValueError("预算调整的原上限与账本不一致")
-            db.execute("CREATE TABLE IF NOT EXISTS budget_changes "
-                       "(previous REAL, next REAL, reason TEXT, at TEXT DEFAULT CURRENT_TIMESTAMP)")
-            db.execute("INSERT INTO budget_changes(previous,next,reason) VALUES (?,?,?)", (previous, new, reason))
+        real_path = Path(path).resolve()
+        _ensure_ledger(real_path, previous, cap)
+        for attempt in range(5):
+            conn = None
+            try:
+                conn = sqlite3.connect(real_path, timeout=60)
+                conn.execute("PRAGMA busy_timeout = 60000")
+                conn.execute("PRAGMA synchronous = NORMAL")
+                with conn:
+                    conn.execute("BEGIN IMMEDIATE")
+                    spent = conn.execute("SELECT COALESCE(SUM(COALESCE(cost, reserved)), 0) FROM calls").fetchone()[0]
+                    if new < spent:
+                        raise ValueError("新预算低于已计费和预留费用")
+                    cap_value = conn.execute("SELECT cap FROM budget WHERE id=1").fetchone()[0]
+                    if cap_value is None or new > cap_value:
+                        raise ValueError("新上限超出研究总预算")
+                    changed = conn.execute("UPDATE budget SET ceiling=? WHERE id=1 AND ceiling=?", (new, previous))
+                    if changed.rowcount != 1:
+                        raise ValueError("预算调整的原上限与账本不一致")
+                    conn.execute("CREATE TABLE IF NOT EXISTS budget_changes "
+                                 "(previous REAL, next REAL, reason TEXT, at TEXT DEFAULT CURRENT_TIMESTAMP)")
+                    conn.execute("INSERT INTO budget_changes(previous,next,reason) VALUES (?,?,?)", (previous, new, reason))
+                return
+            except sqlite3.OperationalError as e:
+                if not is_retryable_sqlite_error(e) or attempt == 4:
+                    raise
+                delay = 0.05 * (2 ** attempt)
+                sys.stderr.write(
+                    f"[{time.strftime('%Y-%m-%d %H:%M:%S')}] [Budget] change_limit 重试 "
+                    f"({attempt+1}/5): {e.sqlite_errorname}(code={e.sqlite_errorcode}): {e}\n"
+                )
+                time.sleep(delay)
+            finally:
+                if conn is not None:
+                    conn.close()
 
     @property
     def ceiling(self):
-        with self.connect() as db:
-            return db.execute("SELECT ceiling FROM budget WHERE id=1").fetchone()[0]
+        return self._run_with_retry(lambda db: db.execute("SELECT ceiling FROM budget WHERE id=1").fetchone()[0], write=False)
 
     def _spent(self, db):
         return db.execute("SELECT COALESCE(SUM(COALESCE(cost, reserved)), 0) FROM calls").fetchone()[0]
@@ -327,8 +389,7 @@ class Budget:
                   + max_tokens * self.rates["output_per_mtok"]) / 1e6
         call_id = uuid.uuid4().hex
         now = time.time()
-        with self.connect() as db:
-            db.execute("BEGIN IMMEDIATE")
+        def do_reserve(db):
             if guard is not None:
                 guard(db, amount, contingency_reason)
             spent = self._spent(db)
@@ -344,7 +405,8 @@ class Budget:
                         f"阶段剩余 ${limit - spent:.6f}")
             db.execute("INSERT INTO calls(id, phase, reserved, at, note) VALUES (?, ?, ?, ?, ?)",
                        (call_id, phase, amount, now, contingency_reason))
-        return call_id
+            return call_id
+        return self._run_with_retry(do_reserve, write=True)
 
     def settle(self, call_id, usage):
         cached = usage.prompt_tokens_details.cached_tokens if usage.prompt_tokens_details else 0
@@ -355,50 +417,55 @@ class Budget:
         # cost 按固定参照价（闲时）记账，组额度与等预算比较只用它，避免高峰时段让某一组吃亏；
         # billed 是按北京时间高峰/闲时折算的实际扣费，只用于报告。
         billed = cost * (self.rates.get("peak_multiplier", 1.0) if beijing_peak() else 1.0)
-        with self.connect() as db:
+        def do_settle(db):
             db.execute("UPDATE calls SET cost=?, billed=?, input_tokens=?, output_tokens=?, cached_tokens=? WHERE id=?",
                        (cost, billed, usage.prompt_tokens, usage.completion_tokens, cached, call_id))
-        return cost
+            return cost
+        return self._run_with_retry(do_settle, write=True)
 
     def release(self, call_id, reason):
         # 没有取得响应体的失败按未计费释放预留；已结算的记录不变。
-        with self.connect() as db:
+        def do_release(db):
             changed = db.execute("UPDATE calls SET cost=0.0, note=? WHERE id=? AND cost IS NULL",
                                  (reason, call_id))
-        return changed.rowcount == 1
+            return changed.rowcount == 1
+        return self._run_with_retry(do_release, write=True)
 
     def window_release_seconds(self):
         """最早一笔在窗口内的调用离开窗口还需多少秒。"""
         if self.window_limit is None:
             return 0.0
         now = time.time()
-        with self.connect() as db:
+        def do_query(db):
             row = db.execute("SELECT MIN(at) FROM calls WHERE at > ?", (now - self.window_seconds,)).fetchone()
-        return 0.0 if row[0] is None else max(0.0, row[0] + self.window_seconds - now)
+            return 0.0 if row[0] is None else max(0.0, row[0] + self.window_seconds - now)
+        return self._run_with_retry(do_query, write=False)
 
     def totals(self):
-        with self.connect() as db:
+        def do_totals(db):
             rows = db.execute("SELECT phase, COUNT(*), SUM(cost), "
                               "SUM(CASE WHEN cost IS NULL THEN reserved ELSE 0 END) "
                               "FROM calls GROUP BY phase").fetchall()
-        return [{"phase": p, "calls": n, "cost_usd": c or 0,
-                 "unsettled_usd": r or 0} for p, n, c, r in rows]
+            return [{"phase": p, "calls": n, "cost_usd": c or 0,
+                     "unsettled_usd": r or 0} for p, n, c, r in rows]
+        return self._run_with_retry(do_totals, write=False)
 
     def state(self):
         now = time.time()
-        with self.connect() as db:
+        def do_state(db):
             spent, pending = db.execute("SELECT COALESCE(SUM(cost), 0), "
                                         "COALESCE(SUM(CASE WHEN cost IS NULL THEN reserved ELSE 0 END), 0) "
                                         "FROM calls").fetchone()
             ceiling, cap = db.execute("SELECT ceiling, cap FROM budget WHERE id=1").fetchone()
             window = self._window_used(db, now)
             billed = db.execute("SELECT COALESCE(SUM(COALESCE(billed, cost)), 0) FROM calls").fetchone()[0]
-        return {"ceiling_usd": ceiling, "research_cap_usd": cap, "spent_usd": spent, "billed_usd": billed,
-                "unsettled_usd": pending,
-                "remaining_usd": None if ceiling is None else ceiling - spent - pending,
-                "window_limit_usd": self.window_limit, "window_seconds": self.window_seconds,
-                "window_used_usd": window,
-                "window_remaining_usd": None if self.window_limit is None else self.window_limit - window}
+            return {"ceiling_usd": ceiling, "research_cap_usd": cap, "spent_usd": spent, "billed_usd": billed,
+                    "unsettled_usd": pending,
+                    "remaining_usd": None if ceiling is None else ceiling - spent - pending,
+                    "window_limit_usd": self.window_limit, "window_seconds": self.window_seconds,
+                    "window_used_usd": window,
+                    "window_remaining_usd": None if self.window_limit is None else self.window_limit - window}
+        return self._run_with_retry(do_state, write=False)
 
 
 def fingerprint(value):

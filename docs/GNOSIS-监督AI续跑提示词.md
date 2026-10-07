@@ -4,35 +4,36 @@
 
 ## 已验证状态
 
-账本修复已通过准入，代码提交为 `2d6662d`。程序版本必须保持：
+断点续跑修复已通过准入，代码提交为 `92ecafd`。程序版本必须保持：
 
-`8bfa4d06004f25f03e7128b4cb0a970c622af9dc77a380195f2d798803007a65`
+`0d4c2efbc3b11377f5cf66c70c627f30cbe2ebf593c86488779d193f21549b03`
 
 活动账本为 WSL 原生 ext4 上的 `/home/jonahwu/.gnosis/research_ledger.sqlite`，项目中的 `state/research_ledger.sqlite` 是软链接，日志模式为 WAL。全部数据库访问统一由 WSL 执行，使用标准 `mode=ro` 只读查询。
 
 2026-10-07 本轮实测：
 
-- `python -m engine.run_research offline` 完成 97 项检查，status 为 passed，模型调用为 0，真实账本未变。版本与上述哈希一致。
-- 真实账本副本在 ext4 上完成 8 个写进程的 400 次事务，以及 4 个读进程的 400 次查询；全部成功，数据与来源逐表逐行一致。写事务更新既有预算行，不产生模型请求。
-- B1 复用全部 30 道断点，严格通过率 70%，截断失败 0，门禁 passed；调用增量为 0，43 份执行记录保留。
-- 真实 SQL 错误立即抛出；监控读取失败输出完整异常调用链并以非零状态退出。正常监控查询通过。
-- 账本 1109 条，参照费用 $2.312858109902（¥16.4212925803042），billed 字段合计 $4.011271426109（¥28.4800271253739）。另有未结算预留 $0.46119638912，保留原始状态，不手工结算或清理。
+- `python -m engine.run_research offline` 完成 103 项检查，status 为 passed，模型调用为 0，真实账本未变。版本与上述哈希一致。
+- 版本兼容迁移 Step 6 已登记在 `experiments/research/version_migration.json`，原始来源标记保留。5 个工作区加载成功，42 份执行结果使用当前程序版本；执行目录共 43 份 JSON，其中另有 1 份失败记录。
+- 在禁用模型调用且启用严格续跑的环境中，B1 复用全部 30 道断点，严格通过率 70%，截断失败 0，门禁 passed；GNOSIS 第 34 轮提议复用后动作是 `inspect`。验证前后真实账本逐行一致。
+- 完整消息比对包含 `tool_calls` 等消息字段；只有修复提议入口显式允许第二条 user 消息中的 `budget` 与 `arm_remaining_usd` 变化。严格续跑缺少响应时，在释放预留之前报错。真实历史工具消息删除 `tool_calls` 后被拒绝复用。
+- 账本 1111 条调用记录，参照费用 $2.312858109902（¥16.4212925803042），billed 字段合计 $4.011271426109（¥28.4800271253739）。另有未结算预留 $0.90564771619，保留原始状态，不手工结算或清理。账本行数包含预留记录，不作为已成功完成的 API 请求数。
 
 关键假设：数据库访问继续统一经 WSL 操作 ext4 账本，程序版本及既有断点保持兼容。撤掉任一假设，本次续跑准入结论失效，应停止并报告实际变化。
 
 ## 启动与监督
 
-1. 核对 Git 包含修复提交，离线证明为 passed 且哈希一致；确认软链接目标、ext4 与 WAL 均正确。确认没有其他实验进程。已有迁移和基线检查通过，不重复迁移或重建断点。
+1. 核对 Git 包含 `92ecafd`，离线证明为 passed 且哈希一致；确认软链接目标、ext4 与 WAL 均正确。确认没有其他实验进程。已有迁移和基线检查通过，不重复迁移或重建断点。
 2. 按项目规定在闲时启动。WSL 工作目录为 `/mnt/e/AI/GNOSIS Agent`，运行：
 
 ```bash
-nohup env PYTHONPATH=scratch/AutomationBench:. \
+nohup env -u GNOSIS_RESUME_ONLY -u GNOSIS_DISABLE_MODEL_CALLS \
+  PYTHONPATH=scratch/AutomationBench:. \
   TIKTOKEN_CACHE_DIR=/home/jonahwu/.cache/tiktoken \
   scratch/AutomationBench/.venv/bin/python -m engine.run_research run \
   >> experiments/run.log 2>&1 &
 ```
 
-`run` 自身会复用并检查 B1，然后继续学习和评估。
+`run` 自身会复用并检查 B1，然后继续学习和评估。正式续跑允许后续新轮次调用模型，使用上述普通 `run` 命令。`--resume-only` 或 `GNOSIS_RESUME_ONLY=1` 用于只复用已有断点的检查，遇到缺失断点立即退出；不要给正式续跑命令添加该选项。
 
 3. 做题期间每 15 分钟检查一次，其余阶段每分钟检查一次。等待使用可中断工具，每次等待 60 秒；未到检查时间不读取进程或日志。
 4. 每次检查仅输出一行：北京时间、阶段、进程状态、执行记录数、累计人民币费用、异常。同步追加到 `experiments/supervision.md`。

@@ -57,7 +57,6 @@ class ResearchEvaluator:
 
     async def execute_one(self, workspace, version, task, arm, bucket, role, repeat,
                           execution_id, revision, task_cost_cap, kind):
-        require_model_access()
         role_map = {"learning": self.plan["search"], "selection": self.plan["selection"],
                     "checkpoint": self.plan["checkpoint"], "heldout": self.plan["heldout"]}
         if role not in role_map:
@@ -67,11 +66,15 @@ class ResearchEvaluator:
         units = workspace.load_version(version)
         execution_id = execution_id or uuid.uuid4().hex
         path = self.output / "executions" / arm / (execution_id + ".json")
+        resume_mode = os.environ.get("GNOSIS_RESUME_ONLY") == "1"
         if path.exists():
             record = json.loads(path.read_text(encoding="utf-8"))
             if (record["task"], record["version"], record["experiment_version"], record["repeat"], record["learning_role"]) != (task, version, self.version, repeat, role):
                 raise ValueError("执行断点输入发生变化")
             return record
+        elif resume_mode:
+            raise FileNotFoundError("断点续跑模式下未找到执行断点: " + str(path))
+        require_model_access()
         load_dotenv(ROOT / ".env")
         dataset, row = self.task(task)
         injector = ScopedInjector(VersionLibrary(workspace, version), config())

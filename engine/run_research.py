@@ -208,7 +208,7 @@ class RepairController:
             try:
                 response = self.model.request(messages, "learning/" + self.arm + "/proposal", checkpoint,
                                                validate=EvolutionAction.model_validate_json,
-                                               options={"response_format": {"type": "json_object"}})
+                                               options={"response_format": {"type": "json_object"}}, allow_budget_drift=True)
                 return EvolutionAction.model_validate_json(response.choices[0].message.content)
             except (ValidationError, AIFormatError) as error:
                 if attempt == POLICY["format_retries"]:
@@ -797,7 +797,10 @@ def main():
     parser = argparse.ArgumentParser(description="GNOSIS 连续修复与激活边界研究入口")
     parser.add_argument("action", choices=("prepare", "baseline", "run", "offline", "unittests", "retest"))
     parser.add_argument("--replay", action="store_true", help="离线验证同时重放全部 30 道先导轨迹")
+    parser.add_argument("--resume-only", action="store_true", help="严格断点续跑模式：缺少断点或断点无有效响应直接硬失败，禁止联网调用")
     args = parser.parse_args()
+    if args.resume_only:
+        os.environ["GNOSIS_RESUME_ONLY"] = "1"
     if args.action == "prepare":
         plan = prepare_plan()
         print(json.dumps({"search_tasks": len(plan["search"]), "selection_tasks": len(plan["selection"]),

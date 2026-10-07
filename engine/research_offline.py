@@ -322,6 +322,44 @@ async def unit_checks(checks, folder, version, cfg):
                 checks.check(db.execute("SELECT COUNT(*) FROM calls").fetchone()[0] == before_calls,
                              "完成断点的二次恢复新增了账本记录")
 
+    # 提议断点在并发账本动态计费字段（budget, arm_remaining_usd）微小漂移时无损复用；核心业务字段变化则拒绝。
+    dyn_saved = folder / "requests" / "resume_dynamic.json"
+    dyn_call = research_budget.reserve("learning/gnosis/proposal", messages, 100)
+    (folder / "io" / dyn_call).mkdir(parents=True, exist_ok=True)
+    ((folder / "io" / dyn_call) / "response.json").write_text(normal[0].model_dump_json(indent=2), encoding="utf-8")
+    saved_msg = [{"role": "system", "content": "prompt"},
+                 {"role": "user", "content": json.dumps({"working_version": "v1", "budget": {"spent_usd": 1.0}, "arm_remaining_usd": 7.5})}]
+    save_json(dyn_saved, {"version": version, "messages": saved_msg, "options": options, "status": "inflight", "call": dyn_call})
+    drifted_msg = [{"role": "system", "content": "prompt"},
+                   {"role": "user", "content": json.dumps({"working_version": "v1", "budget": {"spent_usd": 1.05}, "arm_remaining_usd": 7.45})}]
+    checks.check(model.resume(dyn_saved, drifted_msg, options, None, allow_budget_drift=True).choices[0].finish_reason == "stop", "账本动态计费字段微小漂移后未无损复用")
+    changed_msg = [{"role": "system", "content": "prompt"},
+                   {"role": "user", "content": json.dumps({"working_version": "v2", "budget": {"spent_usd": 1.05}, "arm_remaining_usd": 7.45})}]
+    checks.rejects(ValueError, lambda: model.resume(dyn_saved, changed_msg, options, None, allow_budget_drift=True), "核心版本变化时未拦截")
+
+    # 模式检查：断点续跑模式与新任务模式的边界与权限守卫
+    req_options = {"max_tokens": POLICY["proposal_output_tokens"], "temperature": 1}
+    os.environ["GNOSIS_RESUME_ONLY"] = "1"
+    try:
+        missing_cp = folder / "requests" / "nonexistent.json"
+        checks.rejects(FileNotFoundError, lambda: model.request(messages, "learning/gnosis/proposal", missing_cp, options=req_options),
+                       "断点续跑模式下缺少断点未硬失败")
+        empty_cp = folder / "requests" / "empty_cp.json"
+        empty_call = research_budget.reserve("learning/gnosis/proposal", messages, req_options["max_tokens"])
+        save_json(empty_cp, {"version": version, "messages": messages, "options": req_options, "status": "inflight", "call": empty_call})
+        with research_budget.meter.connect() as db:
+            pending_before = db.execute("SELECT * FROM calls WHERE id=?", (empty_call,)).fetchone()
+        checks.rejects(RuntimeError, lambda: model.request(messages, "learning/gnosis/proposal", empty_cp, options=req_options),
+                       "断点续跑模式下缺少响应记录未硬失败")
+        with research_budget.meter.connect() as db:
+            checks.check(db.execute("SELECT * FROM calls WHERE id=?", (empty_call,)).fetchone() == pending_before,
+                         "严格续跑缺少响应时改变了账本预留")
+    finally:
+        os.environ.pop("GNOSIS_RESUME_ONLY", None)
+
+    checks.rejects(ExecutionBlocked, lambda: model.request(messages, "learning/gnosis/proposal", missing_cp, options=req_options),
+                   "新任务模式下未命中断点且禁用模型时未被权限守卫拦截")
+
     # 参数无法解析的调用不经过 call_tool，模型看到的这条观测仍必须留下 after_call 边界。
     dataset = get_domain_dataset("sales")
     dataset_one, task_row = dataset_row(dataset, "sales.sheets_reconciliation")

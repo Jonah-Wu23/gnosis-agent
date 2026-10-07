@@ -1,6 +1,6 @@
 # GNOSIS Agent
 
-**当前状态（2026-10-07）**：模型服务切换到 DeepSeek 官方 API（`deepseek-flash`），费用上限全部解除，此前全部实验结果报废归档到 `archive/2026-10-07-void/`。当前程序版本 `ae32be8d…` 已通过无模型调用的离线检查（`state/research_offline_check.json`），下一步执行 B1。交付记录见 [docs/GNOSIS-官方API切换交付-2026-10-07.md](docs/GNOSIS-官方API切换交付-2026-10-07.md)，科研计划见 [docs/GNOSIS-科研计划.md](docs/GNOSIS-科研计划.md)，产品边界见 [docs/GNOSIS-产品PRD.md](docs/GNOSIS-产品PRD.md)，改造依据见 [docs/GNOSIS-先导后计划.md](docs/GNOSIS-先导后计划.md)。
+**当前状态（2026-10-07）**：模型服务切换到 DeepSeek 官方 API（`deepseek-flash`），费用上限全部解除，此前全部实验结果报废归档到 `archive/2026-10-07-void/`。当前程序版本 `348fd042…` 已通过无模型调用的离线检查（`state/research_offline_check.json`），下一步执行 B1。交付记录见 [docs/GNOSIS-官方API切换交付-2026-10-07.md](docs/GNOSIS-官方API切换交付-2026-10-07.md)，科研计划见 [docs/GNOSIS-科研计划.md](docs/GNOSIS-科研计划.md)，产品边界见 [docs/GNOSIS-产品PRD.md](docs/GNOSIS-产品PRD.md)，改造依据见 [docs/GNOSIS-先导后计划.md](docs/GNOSIS-先导后计划.md)。
 
 ## 一句话
 

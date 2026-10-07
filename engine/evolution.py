@@ -260,7 +260,7 @@ class ResearchBudget:
 
     @staticmethod
     def arm_used(db, arm):
-        return db.execute("SELECT COALESCE(SUM(COALESCE(cost,reserved)),0) FROM calls WHERE phase LIKE ? OR phase LIKE ?",
+        return db.execute("SELECT COALESCE(SUM(cost),0) FROM calls WHERE phase LIKE ? OR phase LIKE ?",
                           ("learning/" + arm + "/%", "selection/" + arm + "/%")).fetchone()[0]
 
     def observed_task_cost(self):

@@ -82,7 +82,7 @@ def outcome_view(record):
 
 
 def arm_spent(meter, arm):
-    return sum(row["cost_usd"] + row["unsettled_usd"] for row in meter.totals()
+    return sum(row["cost_usd"] for row in meter.totals()
                if row["phase"].split("/")[0] in ("learning", "selection")
                and row["phase"].split("/")[1:2] == [arm])
 

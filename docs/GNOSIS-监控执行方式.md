@@ -4,6 +4,8 @@
 
 活动账本部署于 WSL 原生 Linux 文件系统（ext4，位于 `/home/jonahwu/.gnosis/research_ledger.sqlite`，通过 `state/research_ledger.sqlite` 软链接访问）。全部数据库读写操作**统一由 WSL 执行**。
 
+活动实验产物位于 `/home/jonahwu/.gnosis/research`，项目中的 `experiments/research` 是目录软链接。状态文件与断点在 ext4 上通过独立临时文件原子替换；启动前需确认这两个软链接均有效。迁移来源保留于 `experiments/research.source_20261007`。
+
 在 Windows 终端中直接执行：
 
 ```powershell

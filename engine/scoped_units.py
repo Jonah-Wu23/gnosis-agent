@@ -53,8 +53,8 @@ class ProposalInterrupted(RuntimeError):
 def save_json(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    pending = path.with_name(path.name + ".pending")
-    with pending.open("w", encoding="utf-8") as stream:
+    pending = path.with_name(path.name + "." + uuid.uuid4().hex + ".pending")
+    with pending.open("x", encoding="utf-8") as stream:
         json.dump(value, stream, ensure_ascii=False, indent=2)
         stream.flush()
         os.fsync(stream.fileno())

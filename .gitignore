@@ -16,6 +16,7 @@ config/runtime.json
 *.key
 *.pem
 *.p12
+docs/usage_data_*/
 
 # 历史实验与运行状态
 archive/

@@ -1,0 +1,311 @@
+<?xml version='1.0' encoding='utf-8'?>
+<ns0:svg xmlns:ns0="http://www.w3.org/2000/svg" xmlns:ns1="http://www.inkscape.org/namespaces/inkscape" width="1448" height="1086" viewBox="0 0 1448 1086" version="1.1">
+  <ns0:title>GNOSIS — Continual Agent Repair with Activation Boundaries</ns0:title>
+  <ns0:desc>Editable vector redraw of the supplied three-panel research diagram. Panel A shows continual repair, maturity verification, activation-bounded validation and release. Panel B shows local activation dependencies. Panel C shows global scope.</ns0:desc>
+  <ns0:defs>
+    <ns0:linearGradient id="blueLight" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#e1f2ff" />
+      <ns0:stop offset="100%" style="stop-color:#f5faff" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="blueSoft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#d5ecff" />
+      <ns0:stop offset="100%" style="stop-color:#fbfdff" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="blueHeader" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#d7eeff" />
+      <ns0:stop offset="100%" style="stop-color:#eff8ff" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="greySoft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#f4f6f8" />
+      <ns0:stop offset="100%" style="stop-color:#ffffff" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="greenSoft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#dbfce4" />
+      <ns0:stop offset="100%" style="stop-color:#f6fff8" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="orangeSoft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#ffe1b5" />
+      <ns0:stop offset="100%" style="stop-color:#fff5e7" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="redSoft" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#ffc9c9" />
+      <ns0:stop offset="100%" style="stop-color:#ffeded" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="grayBlock" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#c6d0d9" />
+      <ns0:stop offset="100%" style="stop-color:#e0e4e8" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="orangeBlock" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#ffc783" />
+      <ns0:stop offset="100%" style="stop-color:#ffe3b8" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="redBlock" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#ffb5b5" />
+      <ns0:stop offset="100%" style="stop-color:#ffe1e1" />
+    </ns0:linearGradient>
+    <ns0:linearGradient id="cream" x1="0%" y1="0%" x2="0%" y2="100%">
+      <ns0:stop offset="0%" style="stop-color:#fff2d5" />
+      <ns0:stop offset="100%" style="stop-color:#fffdfa" />
+    </ns0:linearGradient>
+    <ns0:marker id="tip-slate" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+      <ns0:path d="M 0 0 L 10 5 L 0 10 z" fill="#687c93" />
+    </ns0:marker>
+    <ns0:marker id="tip-darkblue" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+      <ns0:path d="M 0 0 L 10 5 L 0 10 z" fill="#0659a9" />
+    </ns0:marker>
+    <ns0:marker id="tip-blue" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+      <ns0:path d="M 0 0 L 10 5 L 0 10 z" fill="#007afd" />
+    </ns0:marker>
+    <ns0:marker id="tip-green" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+      <ns0:path d="M 0 0 L 10 5 L 0 10 z" fill="#00b743" />
+    </ns0:marker>
+    <ns0:marker id="tip-orange" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+      <ns0:path d="M 0 0 L 10 5 L 0 10 z" fill="#ff7900" />
+    </ns0:marker>
+    <ns0:marker id="tip-red" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+      <ns0:path d="M 0 0 L 10 5 L 0 10 z" fill="#ff1723" />
+    </ns0:marker>
+    <ns0:marker id="tip-white" markerWidth="11" markerHeight="11" refX="9" refY="5" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 10 10">
+      <ns0:path d="M 0 0 L 10 5 L 0 10 z" fill="#ffffff" />
+    </ns0:marker>
+  </ns0:defs>
+  <ns0:rect x="0" y="0" width="1448" height="1086" fill="#ffffff" />
+  <ns0:g id="panel-a" ns1:label="Panel A — Continual Repair and Release">
+    <ns0:rect x="5.8" y="6.2" width="787.6" height="1058.4" rx="2.3" ry="2.3" fill="none" stroke="#2771b9" stroke-width="1.35" />
+    <ns0:text x="22" y="52" font-family="Liberation Sans, Arial, sans-serif" font-size="44" font-weight="bold" text-anchor="start" fill="#0b0b0d">A</ns0:text>
+    <ns0:text x="75" y="52" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="41" font-weight="bold" text-anchor="start" fill="#0b0b0d" textLength="528" lengthAdjust="spacingAndGlyphs">Continual Repair and Release</ns0:text>
+    <ns0:g id="a-connections" ns1:label="Development and feedback arrows">
+      <ns0:line x1="186" y1="178" x2="215" y2="178" stroke="#687c93" stroke-width="2.6" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="332" y1="178" x2="378" y2="178" stroke="#0659a9" stroke-width="2.45" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-darkblue)" />
+      <ns0:line x1="432" y1="177" x2="487" y2="177" stroke="#0659a9" stroke-width="2.45" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-darkblue)" />
+      <ns0:path d="M 408 253 V 336 Q 408 341 414 341 H 461" fill="none" stroke="#687c93" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-slate)" />
+      <ns0:path d="M 489 94 H 310 Q 266 94 266 130 V 139" fill="none" stroke="#007afd" stroke-width="3.3" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-blue)" />
+      <ns0:line x1="550" y1="245" x2="550" y2="278" stroke="#007afd" stroke-width="2.9" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-blue)" />
+      <ns0:path d="M 502 396 H 401 Q 393 396 393 405 V 421" fill="none" stroke="#687c93" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-slate)" />
+    </ns0:g>
+    <ns0:rect x="22.0" y="101.4" width="164" height="126" rx="6" ry="6" fill="url(#greySoft)" stroke="#687c93" stroke-width="2.6" />
+    <ns0:text x="104" y="130" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#0b0b0d">Development</ns0:text>
+    <ns0:text x="104" y="153" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#0b0b0d">Tasks</ns0:text>
+    <ns0:path d="M36 166 H56 L67 176 V213 H36 Z" fill="#fefefe" stroke="#687c93" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:path d="M56 166 V176 H67" fill="none" stroke="#687c93" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:line x1="43" y1="185.64" x2="60" y2="185.64" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="43" y1="193.32" x2="60" y2="193.32" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="43" y1="201.0" x2="60" y2="201.0" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:path d="M80 166 H100 L111 176 V213 H80 Z" fill="#fefefe" stroke="#687c93" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:path d="M100 166 V176 H111" fill="none" stroke="#687c93" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:line x1="87" y1="185.64" x2="104" y2="185.64" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="87" y1="193.32" x2="104" y2="193.32" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="87" y1="201.0" x2="104" y2="201.0" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:path d="M145 166 H165 L176 176 V213 H145 Z" fill="#fefefe" stroke="#687c93" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:path d="M165 166 V176 H176" fill="none" stroke="#687c93" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:line x1="152" y1="185.64" x2="169" y2="185.64" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="152" y1="193.32" x2="169" y2="193.32" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="152" y1="201.0" x2="169" y2="201.0" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:text x="128" y="196" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#0b0b0d">...</ns0:text>
+    <ns0:rect x="218" y="141" width="114" height="73" rx="7" ry="7" fill="url(#blueLight)" stroke="#007afd" stroke-width="3.0" />
+    <ns0:text x="275" y="177" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#071268">Agent</ns0:text>
+    <ns0:text x="275" y="199" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#071268">Execution</ns0:text>
+    <ns0:path d="M385 143 H416 L431 157 V204 H385 Z" fill="#fefefe" stroke="#687c93" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:path d="M416 143 V157 H431" fill="none" stroke="#687c93" stroke-width="3.0" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:line x1="392" y1="168.66" x2="424" y2="168.66" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="392" y1="178.57999999999998" x2="424" y2="178.57999999999998" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:line x1="392" y1="188.5" x2="424" y2="188.5" stroke="#687c93" stroke-width="2.1" fill="none" stroke-linejoin="round" stroke-linecap="round" />
+    <ns0:text x="407" y="229" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Execution</ns0:text>
+    <ns0:text x="407" y="252" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Feedback</ns0:text>
+    <ns0:rect x="489" y="84" width="267" height="161" rx="7" ry="7" fill="url(#blueLight)" stroke="#007afd" stroke-width="3.0" />
+    <ns0:text x="625" y="117" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="27.6" font-weight="bold" text-anchor="middle" fill="#071268">Working Version G′</ns0:text>
+    <ns0:rect x="503.5" y="131" width="237" height="47" rx="6" ry="6" fill="url(#blueSoft)" stroke="#007afd" stroke-width="1.75" />
+    <ns0:text x="622" y="161" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="normal" text-anchor="middle" fill="#071268">Text Units</ns0:text>
+    <ns0:rect x="503.5" y="188" width="237" height="43" rx="5" ry="5" fill="url(#blueSoft)" stroke="#007afd" stroke-width="1.75" />
+    <ns0:text x="622" y="217" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="normal" text-anchor="middle" fill="#071268">Executable Components</ns0:text>
+    <ns0:path d="M 468 731 H 753 Q 786 731 786 686 V 168 Q 786 146 770 146 H 757" fill="none" stroke="#007afd" stroke-width="4.1" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-blue)" />
+    <ns0:text x="722" y="281" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#007afd">Continue</ns0:text>
+    <ns0:text x="722" y="304" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#007afd">Repair</ns0:text>
+    <ns0:polygon points="550,278 638,343 550,409 463,343" stroke="#071268" stroke-width="2.1" fill="url(#blueSoft)" />
+    <ns0:text x="550" y="325" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#071268">Maturity</ns0:text>
+    <ns0:text x="550" y="349" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#071268">Check</ns0:text>
+    <ns0:text x="550" y="364" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="14.5" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Source-task</ns0:text>
+    <ns0:text x="550" y="381" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="14.5" font-weight="normal" text-anchor="middle" fill="#0b0b0d">success</ns0:text>
+    <ns0:g id="activation-bounded-validation" ns1:label="Activation-Bounded Validation details">
+      <ns0:rect x="25.1" y="421.1" width="734" height="228" rx="7" ry="7" fill="url(#blueSoft)" stroke="#007afd" stroke-width="3.0" />
+      <ns0:path d="M 29 425 H 755 V 465 H 29 Z" fill="url(#blueHeader)" stroke="none" />
+      <ns0:text x="392" y="457" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="28" font-weight="bold" text-anchor="middle" fill="#071268" textLength="339" lengthAdjust="spacingAndGlyphs">Activation-Bounded Validation</ns0:text>
+      <ns0:path d="M 152 509 H 173 V 548 H 197" fill="none" stroke="#687c93" stroke-width="2.55" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-slate)" />
+      <ns0:path d="M 152 576 H 173 V 548" fill="none" stroke="#687c93" stroke-width="2.55" stroke-linecap="round" stroke-linejoin="round" />
+      <ns0:line x1="286" y1="548" x2="312" y2="548" stroke="#687c93" stroke-width="2.45" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="430" y1="548" x2="456" y2="548" stroke="#687c93" stroke-width="2.45" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:path d="M 575 548 H 596 V 495 H 626" fill="none" stroke="#687c93" stroke-width="2.45" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-slate)" />
+      <ns0:path d="M 596 548 V 578 H 627" fill="none" stroke="#687c93" stroke-width="2.45" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-slate)" />
+      <ns0:rect x="40" y="480" width="112" height="57" rx="6" ry="6" fill="url(#greenSoft)" stroke="#00b743" stroke-width="2.0" />
+      <ns0:text x="96" y="502" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="bold" text-anchor="middle" fill="#0b0b0d">Released</ns0:text>
+      <ns0:text x="96" y="523" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="bold" text-anchor="middle" fill="#0b0b0d">Version G</ns0:text>
+      <ns0:rect x="40" y="546" width="112" height="59" rx="6" ry="6" fill="url(#blueSoft)" stroke="#007afd" stroke-width="2.0" />
+      <ns0:text x="96" y="570" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="bold" text-anchor="middle" fill="#071268">Candidate</ns0:text>
+      <ns0:text x="96" y="591" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="bold" text-anchor="middle" fill="#071268">G′</ns0:text>
+      <ns0:rect x="199" y="505" width="87" height="78" rx="6" ry="6" fill="url(#greySoft)" stroke="#687c93" stroke-width="2.3" />
+      <ns0:text x="242.5" y="528" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Change</ns0:text>
+      <ns0:text x="242.5" y="549" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Set Δ</ns0:text>
+      <ns0:rect x="313" y="499" width="117" height="90" rx="6" ry="6" fill="url(#greySoft)" stroke="#687c93" stroke-width="2.25" />
+      <ns0:text x="371.5" y="523" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Activation</ns0:text>
+      <ns0:text x="371.5" y="544" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Dependency</ns0:text>
+      <ns0:text x="371.5" y="565" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Analysis</ns0:text>
+      <ns0:rect x="456.5" y="499" width="118" height="90" rx="6" ry="6" fill="url(#greySoft)" stroke="#687c93" stroke-width="2.25" />
+      <ns0:text x="515.5" y="523" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Dependency</ns0:text>
+      <ns0:text x="515.5" y="544" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Union</ns0:text>
+      <ns0:text x="515.5" y="565" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="19" font-weight="normal" text-anchor="middle" fill="#0b0b0d">V(Δ)</ns0:text>
+      <ns0:rect x="628" y="468" width="117" height="61" rx="7" ry="7" fill="url(#orangeSoft)" stroke="#ff7900" stroke-width="2.05" />
+      <ns0:text x="687" y="494" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Reuse</ns0:text>
+      <ns0:text x="687" y="516" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Evidence</ns0:text>
+      <ns0:rect x="628" y="547" width="117" height="75" rx="6" ry="6" fill="url(#redSoft)" stroke="#ff1723" stroke-width="2.05" />
+      <ns0:text x="686.5" y="575.0" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Rerun</ns0:text>
+      <ns0:text x="686.5" y="596.2" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Affected</ns0:text>
+      <ns0:text x="686.5" y="617.4" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Records</ns0:text>
+      <ns0:rect x="313.5" y="598" width="262" height="37" rx="6" ry="6" fill="url(#cream)" stroke="#ff7900" stroke-width="1.7" />
+      <ns0:text x="444" y="622" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="17" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Any GLOBAL change → V(Δ) = H</ns0:text>
+    </ns0:g>
+    <ns0:line x1="393" y1="650" x2="393" y2="682" stroke="#007afd" stroke-width="3.1" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-blue)" />
+    <ns0:line x1="393" y1="779" x2="393" y2="804" stroke="#00b743" stroke-width="3.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-green)" />
+    <ns0:line x1="393" y1="936" x2="393" y2="972" stroke="#00b743" stroke-width="3.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-green)" />
+    <ns0:polygon points="393,680 468,731 393,779 319,731" stroke="#071268" stroke-width="2.0" fill="url(#blueSoft)" />
+    <ns0:text x="393" y="723" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#071268">Release</ns0:text>
+    <ns0:text x="393" y="747" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#071268">Gate</ns0:text>
+    <ns0:rect x="257" y="804" width="272" height="132" rx="7" ry="7" fill="url(#greenSoft)" stroke="#00b743" stroke-width="3.1" />
+    <ns0:text x="393" y="838" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="25.7" font-weight="bold" text-anchor="middle" fill="#0b0b0d" textLength="184" lengthAdjust="spacingAndGlyphs">Released Version G</ns0:text>
+    <ns0:rect x="271" y="850" width="243" height="34" rx="5" ry="5" fill="url(#greenSoft)" stroke="#00b743" stroke-width="1.65" />
+    <ns0:text x="393" y="872" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Text Units</ns0:text>
+    <ns0:rect x="271" y="892" width="243" height="34" rx="5" ry="5" fill="url(#greenSoft)" stroke="#00b743" stroke-width="1.65" />
+    <ns0:text x="393" y="914" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Executable Components</ns0:text>
+    <ns0:rect x="241" y="972" width="304" height="64" rx="8" ry="8" fill="url(#greenSoft)" stroke="#00b743" stroke-width="3.1" />
+    <ns0:text x="393" y="1013" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="27" font-weight="bold" text-anchor="middle" fill="#0b0b0d" textLength="252" lengthAdjust="spacingAndGlyphs">Final Hold-out Evaluation</ns0:text>
+  </ns0:g>
+  <ns0:g id="panel-b" ns1:label="Panel B — Local Activation (Illustrative)">
+    <ns0:rect x="798.6" y="6.1" width="643.5" height="572.6" rx="2.3" ry="2.3" fill="none" stroke="#2771b9" stroke-width="1.35" />
+    <ns0:text x="819" y="49" font-family="Liberation Sans, Arial, sans-serif" font-size="42" font-weight="bold" text-anchor="start" fill="#0b0b0d">B</ns0:text>
+    <ns0:text x="865" y="49" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="39" font-weight="bold" text-anchor="start" fill="#0b0b0d" textLength="471" lengthAdjust="spacingAndGlyphs">Local Activation (Illustrative)</ns0:text>
+    <ns0:rect x="858" y="82" width="261" height="47" rx="6" ry="6" fill="url(#blueLight)" stroke="#007afd" stroke-width="2.1" />
+    <ns0:text x="988" y="113" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#071268">LOCAL Component</ns0:text>
+    <ns0:text x="968" y="163" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="start" fill="#ff7900">Registered Activation Point</ns0:text>
+    <ns0:g id="b-execution-traces" ns1:label="Four illustrative execution traces">
+      <ns0:rect x="823" y="188" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="900" y="188" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="978" y="188" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="1055" y="188" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="1132" y="188" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:line x1="879" y1="206" x2="898" y2="206" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="956" y1="206" x2="976" y2="206" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="1034" y1="206" x2="1053" y2="206" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="1111" y1="206" x2="1130" y2="206" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:rect x="823" y="251" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="900" y="251" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="978" y="251" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="1055" y="251" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="1132" y="251" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:line x1="879" y1="269" x2="898" y2="269" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="956" y1="269" x2="976" y2="269" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="1034" y1="269" x2="1053" y2="269" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="1111" y1="269" x2="1130" y2="269" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:rect x="823" y="318" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="900" y="318" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="978" y="318" width="56" height="36" rx="4" ry="4" fill="url(#orangeBlock)" stroke="#ff7900" stroke-width="1.95" />
+      <ns0:rect x="1055" y="318" width="56" height="36" rx="4" ry="4" fill="url(#orangeBlock)" stroke="#ff7900" stroke-width="1.95" />
+      <ns0:rect x="1132" y="318" width="56" height="36" rx="4" ry="4" fill="url(#orangeBlock)" stroke="#ff7900" stroke-width="1.95" />
+      <ns0:line x1="879" y1="336" x2="898" y2="336" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="956" y1="336" x2="976" y2="336" stroke="#ff7900" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-orange)" />
+      <ns0:line x1="1034" y1="336" x2="1053" y2="336" stroke="#ff7900" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-orange)" />
+      <ns0:line x1="1111" y1="336" x2="1130" y2="336" stroke="#ff7900" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-orange)" />
+      <ns0:rect x="823" y="383" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="900" y="383" width="56" height="36" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+      <ns0:rect x="978" y="383" width="56" height="36" rx="4" ry="4" fill="url(#orangeBlock)" stroke="#ff7900" stroke-width="1.95" />
+      <ns0:rect x="1055" y="383" width="56" height="36" rx="4" ry="4" fill="url(#orangeBlock)" stroke="#ff7900" stroke-width="1.95" />
+      <ns0:rect x="1132" y="383" width="56" height="36" rx="4" ry="4" fill="url(#orangeBlock)" stroke="#ff7900" stroke-width="1.95" />
+      <ns0:line x1="879" y1="401" x2="898" y2="401" stroke="#687c93" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+      <ns0:line x1="956" y1="401" x2="976" y2="401" stroke="#ff7900" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-orange)" />
+      <ns0:line x1="1034" y1="401" x2="1053" y2="401" stroke="#ff7900" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-orange)" />
+      <ns0:line x1="1111" y1="401" x2="1130" y2="401" stroke="#ff7900" stroke-width="1.85" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-orange)" />
+    </ns0:g>
+    <ns0:path d="M 961 313 V 431" fill="none" stroke="#ff7900" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="9 7" />
+    <ns0:path d="M 1198 191 H 1209 Q 1212 191 1212 195 V 282 Q 1212 286 1208 286 H 1198" fill="none" stroke="#687c93" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:path d="M 1198 324 H 1210 Q 1213 324 1213 329 V 430 Q 1213 434 1209 434 H 1198" fill="none" stroke="#ff1723" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:text x="1257" y="233" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Unaffected</ns0:text>
+    <ns0:text x="1257" y="255" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">records</ns0:text>
+    <ns0:text x="1257" y="371" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Affected</ns0:text>
+    <ns0:text x="1257" y="393" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="normal" text-anchor="middle" fill="#0b0b0d">records</ns0:text>
+    <ns0:line x1="1305" y1="240" x2="1339" y2="240" stroke="#687c93" stroke-width="1.9" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-slate)" />
+    <ns0:line x1="1291" y1="371" x2="1328" y2="371" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+    <ns0:rect x="1340" y="215" width="92" height="47" rx="7" ry="7" fill="url(#greySoft)" stroke="#687c93" stroke-width="3.0" />
+    <ns0:text x="1386" y="246" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#0b0b0d">Reuse</ns0:text>
+    <ns0:rect x="1330" y="343" width="105" height="53" rx="6" ry="6" fill="url(#redSoft)" stroke="#ff1723" stroke-width="1.8" />
+    <ns0:text x="1382" y="377" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="20" font-weight="bold" text-anchor="middle" fill="#ff1723">Full Rerun</ns0:text>
+    <ns0:text x="1381" y="421" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="18" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Restart from</ns0:text>
+    <ns0:text x="1381" y="442" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="18" font-weight="normal" text-anchor="middle" fill="#0b0b0d">Initial State</ns0:text>
+    <ns0:text x="1114" y="472" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22.7" font-weight="normal" text-anchor="middle" fill="#0b0b0d">First activation defines dependency</ns0:text>
+    <ns0:rect x="1096" y="494" width="337" height="68" rx="6" ry="6" fill="#ffffff" stroke="#9eafc4" stroke-width="1.1" />
+    <ns0:rect x="1115" y="500" width="54" height="25" rx="4" ry="4" fill="url(#grayBlock)" stroke="#687c93" stroke-width="1.95" />
+    <ns0:text x="1178" y="520" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="18" font-weight="normal" text-anchor="start" fill="#0b0b0d">= unaffected / pre-activation prefix</ns0:text>
+    <ns0:rect x="1115" y="533" width="54" height="25" rx="4" ry="4" fill="url(#orangeBlock)" stroke="#ff7900" stroke-width="1.95" />
+    <ns0:text x="1178" y="553" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="18" font-weight="normal" text-anchor="start" fill="#0b0b0d">= affected suffix</ns0:text>
+  <ns0:g id="b-component-registration" ns1:label="Registered local activation point">
+      <ns0:path d="M 927 132 L 952 310" fill="none" stroke="#ff7900" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round" marker-end="url(#tip-orange)" stroke-dasharray="8 5" />
+      <ns0:line x1="958" y1="156" x2="945" y2="156" stroke="#ff7900" stroke-width="1.55" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-orange)" />
+    </ns0:g>
+    </ns0:g>
+  <ns0:g id="panel-c" ns1:label="Panel C — Global Scope (Observed)">
+    <ns0:rect x="798.4" y="589.5" width="643.8" height="475.1" rx="2.3" ry="2.3" fill="none" stroke="#2771b9" stroke-width="1.35" />
+    <ns0:text x="820" y="632" font-family="Liberation Sans, Arial, sans-serif" font-size="41" font-weight="bold" text-anchor="start" fill="#0b0b0d">C</ns0:text>
+    <ns0:text x="863" y="632" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="38" font-weight="bold" text-anchor="start" fill="#0b0b0d" textLength="335" lengthAdjust="spacingAndGlyphs">Global Scope (Observed)</ns0:text>
+    <ns0:rect x="849" y="653" width="258" height="48" rx="6" ry="6" fill="url(#redSoft)" stroke="#ff1723" stroke-width="2.1" />
+    <ns0:text x="978" y="684" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="22" font-weight="bold" text-anchor="middle" fill="#ff1723">GLOBAL Modification</ns0:text>
+    <ns0:text x="1161" y="689" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="18" font-weight="normal" text-anchor="start" fill="#0b0b0d">Schematic execution traces</ns0:text>
+    <ns0:line x1="877" y1="700" x2="877" y2="724" stroke="#ff1723" stroke-width="2.25" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+    <ns0:path d="M 877 717 V 957" fill="none" stroke="#ff1723" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="12 7" />
+    <ns0:g id="c-execution-traces" ns1:label="Four observed-global-scope schematic traces">
+      <ns0:line x1="822" y1="745" x2="875" y2="745" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:rect x="884" y="725" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="960" y="725" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1035" y="725" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1110" y="725" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1186" y="725" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:line x1="938" y1="745" x2="959" y2="745" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1014" y1="745" x2="1034" y2="745" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1089" y1="745" x2="1109" y2="745" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1164" y1="745" x2="1185" y2="745" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="822" y1="804" x2="875" y2="804" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:rect x="884" y="784" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="960" y="784" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1035" y="784" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1110" y="784" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1186" y="784" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:line x1="938" y1="804" x2="959" y2="804" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1014" y1="804" x2="1034" y2="804" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1089" y1="804" x2="1109" y2="804" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1164" y1="804" x2="1185" y2="804" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="822" y1="862" x2="875" y2="862" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:rect x="884" y="842" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="960" y="842" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1035" y="842" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1110" y="842" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1186" y="842" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:line x1="938" y1="862" x2="959" y2="862" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1014" y1="862" x2="1034" y2="862" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1089" y1="862" x2="1109" y2="862" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1164" y1="862" x2="1185" y2="862" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="822" y1="921" x2="875" y2="921" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:rect x="884" y="901" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="960" y="901" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1035" y="901" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1110" y="901" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:rect x="1186" y="901" width="54" height="40" rx="4" ry="4" fill="url(#redBlock)" stroke="#ff1723" stroke-width="1.95" />
+      <ns0:line x1="938" y1="921" x2="959" y2="921" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1014" y1="921" x2="1034" y2="921" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1089" y1="921" x2="1109" y2="921" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+      <ns0:line x1="1164" y1="921" x2="1185" y2="921" stroke="#ff1723" stroke-width="2.0" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+    </ns0:g>
+    <ns0:path d="M 1249 735 H 1258 Q 1262 735 1262 741 V 916 Q 1262 925 1258 925 H 1249" fill="none" stroke="#ff1723" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+    <ns0:line x1="1263" y1="816" x2="1302" y2="816" stroke="#ff1723" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round" marker-end="url(#tip-red)" />
+    <ns0:rect x="1302" y="785" width="134" height="74" rx="7" ry="7" fill="url(#redSoft)" stroke="#ff1723" stroke-width="1.85" />
+    <ns0:text x="1369" y="814" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#ff1723">All Records:</ns0:text>
+    <ns0:text x="1369" y="842" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="bold" text-anchor="middle" fill="#ff1723">Rerun</ns0:text>
+    <ns0:text x="1203" y="981" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="normal" text-anchor="start" fill="#0b0b0d" textLength="221" lengthAdjust="spacingAndGlyphs">48/48 plans: global_scope</ns0:text>
+    <ns0:text x="1203" y="1009" font-family="Liberation Sans Narrow, Arial Narrow, sans-serif" font-size="21" font-weight="normal" text-anchor="start" fill="#0b0b0d" textLength="166" lengthAdjust="spacingAndGlyphs">Evidence reused: 0</ns0:text>
+  </ns0:g>
+</ns0:svg>

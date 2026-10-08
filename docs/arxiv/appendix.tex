@@ -1,0 +1,188 @@
+\section{Evaluation protocol}\label{app:protocol}
+
+The task partition uses seed 100 and the AutomationBench revision
+\texttt{4a8e1061254004d9dac807054eed33fad7d1ff14}.
+Table~\ref{tab:task-partition} gives every task identifier. Each domain contributes five development tasks, one independent selection task, and five final evaluation tasks. The six intermediate evaluation tasks are the first development task in each domain. Their evaluation outcomes are stored separately and are not supplied as repair feedback. Development evidence for those tasks remains available through the ordinary learning procedure.
+
+\begin{table*}[t]
+\centering
+\caption{Fixed task partition. Identifiers are shown in full. A dagger marks the six development tasks used for intermediate evaluation. The development and final evaluation columns each contain 30 tasks; the independent selection set contains six tasks.}
+\label{tab:task-partition}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\textwidth}{@{}XX@{}}
+\toprule
+Development & Final evaluation \\
+\midrule
+\path{sales.linkedin_profile_enrichment}$^{\dagger}$ & \path{sales.soft_matching} \\
+\path{sales.chatgpt_contract_summary} & \path{sales.linkedin_event_promotion} \\
+\path{sales.slack_deal_notification} & \path{sales.cross_reference_validation} \\
+\path{sales.sheets_reconciliation} & \path{sales.docusign_void_resend} \\
+\path{sales.mark_vip_emails_read} & \path{sales.send_customer_email} \\
+\addlinespace
+\path{operations.facebook_roas_monitoring}$^{\dagger}$ & \path{operations.space_utilization_analysis} \\
+\path{operations.purchase_order_three_way_match} & \path{operations.office_supply_budget_monitoring} \\
+\path{operations.twilio_afterhours_incident} & \path{operations.fire_extinguisher_inspection_schedule} \\
+\path{operations.drive_slack_dock_schedule} & \path{operations.hubspot_personalized_outreach} \\
+\path{operations.calendar_slack_training} & \path{operations.sheets_asana_approved_request} \\
+\addlinespace
+\path{hr.airtable_learning_path_assignment}$^{\dagger}$ & \path{hr.slack_channel_onboarding} \\
+\path{hr.promotion_announcement} & \path{hr.performance_feedback_logging} \\
+\path{hr.airtable_skills_matrix} & \path{hr.employee_request_routing} \\
+\path{hr.policy_update_distribution} & \path{hr.interview_scheduling} \\
+\path{hr.mandatory_meeting_compliance} & \path{hr.salary_adjustment_processing} \\
+\addlinespace
+\path{marketing.customer_milestone}$^{\dagger}$ & \path{marketing.social_engagement_response} \\
+\path{marketing.landing_page_conversion} & \path{marketing.partner_comarketing} \\
+\path{marketing.competitive_response_plan} & \path{marketing.event_followup_personalization} \\
+\path{marketing.seasonal_campaign} & \path{marketing.influencer_contract_tracking} \\
+\path{marketing.content_syndication} & \path{marketing.social_content_calendar} \\
+\addlinespace
+\path{support.gorgias_channel_consolidation}$^{\dagger}$ & \path{support.zendesk_maintenance_notify} \\
+\path{support.hiver_coaching_pipeline} & \path{support.reamaze_intercom_migration} \\
+\path{support.freshdesk_sla_monitoring} & \path{support.helpscout_jira_bugs} \\
+\path{support.intercom_freshdesk_escalation} & \path{support.hiver_response_sla} \\
+\path{support.gorgias_freshdesk_migration} & \path{support.zendesk_hubspot_churn_risk} \\
+\addlinespace
+\path{finance.prepaid_amortization}$^{\dagger}$ & \path{finance.wave_client_statement} \\
+\path{finance.project_profitability} & \path{finance.qb_undeposited_funds} \\
+\path{finance.invoice_file_organization} & \path{finance.gl_variance_analysis} \\
+\path{finance.qb_invoice_from_orders} & \path{finance.monday_project_billing} \\
+\path{finance.xero_credit_allocation} & \path{finance.vendor_payment_approval} \\
+\midrule
+\multicolumn{2}{@{}l}{Independent selection} \\
+\path{sales.chatgpt_lead_summary_generator} & \path{operations.cross_department_budget_reconciliation} \\
+\path{hr.compliance_training_enforcement} & \path{marketing.content_localization} \\
+\path{support.helpcrunch_engagement_scoring} & \path{finance.dept_expense_rollup} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+All four frozen conditions use the official DeepSeek API with model identifier \texttt{deepseek-flash}, reasoning enabled at \texttt{high} effort, temperature 1, and a maximum output of 393,216 tokens per response. This output limit is distinct from the model's context capacity. The benchmark uses the \texttt{api} toolset and allows at most 50 agent steps. Each evaluation starts with a fresh environment and fresh component state. Previous evaluation responses and trajectories are absent from subsequent independent executions. These conditions define the comparison: changing the initial state or exposing prior evaluation outcomes changes the task-solving distribution being measured.
+
+The frozen conditions each run the same 30 tasks five times, yielding 150 executions per condition and 600 executions in total. All 600 terminate normally. The development execution check completes 30 tasks, with 21 strict successes and no truncation among the nine failures. Final evaluation uses the frozen versions in Table~\ref{tab:frozen-versions}; intermediate evaluation uses a separate working candidate, \texttt{986335b24f89}. Fingerprints are abbreviated to 12 hexadecimal characters, which distinguish all versions listed here. The experiment implementation fingerprint begins \texttt{0d4c2efbc3b1}, and its Git history includes commit \texttt{4f742b9}.
+
+\begin{table}[t]
+\centering
+\caption{Frozen versions used in all five independent repetitions. Text and executable counts describe persistent units.}
+\label{tab:frozen-versions}
+\footnotesize
+\begin{tabular}{@{}llrr@{}}
+\toprule
+Condition & Fingerprint & Text & Executable \\
+\midrule
+Fixed & \texttt{4f53cda18c2b} & 0 & 0 \\
+ACE & \texttt{9b29cc26db48} & 1 & 0 \\
+Global & \texttt{341e767a59ec} & 17 & 0 \\
+GNOSIS & \texttt{0faf0fdd660e} & 13 & 1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The repeated-attempt condition retains the preceding trajectory for revision and scores the last attempt on each task. It makes 354 attempts: 347 end normally, six reach the allocated task budget, and one is truncated. The 30 final outcomes comprise 23 normal terminations, six budget terminations, and one truncation. Its success rate therefore uses 30 final outcomes, while the frozen conditions use 150 independent outcomes summarized within 30 tasks.
+
+\section{Statistical results}\label{app:statistics}
+
+For task $i$ and condition $g$, strict performance is the mean of the five binary outcomes, $s_{ig}=\frac{1}{5}\sum_{r=1}^{5}y_{igr}$. Partial credit is averaged over the same five repetitions. Comparisons use the 30 task differences $d_i=s_{i,\mathrm{GNOSIS}}-s_{ig}$. The two-sided exact paired permutation test enumerates every sign assignment to nonzero task differences. Paired bootstrap intervals resample the 30 task pairs 200,000 times with NumPy seed 100. This preserves the repeated observations belonging to each task.
+
+Table~\ref{tab:complete-statistics} reports all three comparisons for each endpoint. Holm adjustment is performed separately within each endpoint's family of three comparisons. The all-five-success endpoint is binary at the task level and uses the two-sided exact McNemar test. Its discordant counts indicate tasks for which GNOSIS alone or the comparison condition alone succeeds in every repetition. GNOSIS has the highest observed strict success and the most consistently solved tasks; none of the Holm-adjusted comparisons reaches 0.05.
+
+\begin{table*}[t]
+\centering
+\caption{Complete task-level comparisons of GNOSIS against each frozen condition. Strict differences and their intervals are in percentage points. Partial-credit differences use the original $[0,1]$ scale. For all-five success, the effect column gives discordant wins/losses.}
+\label{tab:complete-statistics}
+\small
+\begin{tabular}{@{}llrlrr@{}}
+\toprule
+Endpoint & Comparator & \shortstack{Difference or\\wins/losses} & \shortstack{95\% paired\\bootstrap interval} & Exact $p$ & Holm $p$ \\
+\midrule
+Strict success & Fixed & $+3.3333$ & $[-4.0000,10.0000]$ & 0.472656 & 0.656250 \\
+ & ACE & $+8.0000$ & $[-2.6667,19.3333]$ & 0.218750 & 0.656250 \\
+ & Global & $+5.3333$ & $[-2.0000,12.6667]$ & 0.242188 & 0.656250 \\
+\addlinespace
+Partial credit & Fixed & $+0.047386$ & $[0.012508,0.085662]$ & 0.016914 & 0.050743 \\
+ & ACE & $+0.055867$ & $[0.001575,0.108880]$ & 0.052208 & 0.104416 \\
+ & Global & $-0.000534$ & $[-0.034793,0.028595]$ & 0.976685 & 0.976685 \\
+\addlinespace
+All-five success & Fixed & $8/1$ & --- & 0.039063 & 0.117188 \\
+ & ACE & $7/1$ & --- & 0.070313 & 0.125000 \\
+ & Global & $5/0$ & --- & 0.062500 & 0.125000 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{Components and selection}\label{app:components}
+
+Every delivered unit has \texttt{GLOBAL} scope. The final GNOSIS version contains 13 text units and one executable E component, \texttt{ace\_op\_vp\_guard}, which processes job-title information at the task API boundary. Across development, the candidate history contains ten distinct executable source contents, including revisions of the same component. The host compiles the TypeScript source and registers it through Cordis; execution occurs in QuickJS with access to the task's original capabilities. During the 150 final GNOSIS executions, the executable component is invoked 6,276 times: 150 at task start and 6,126 before a tool call. These invocations produce zero nonempty effects and zero capability calls. The 13 text units are injected 1,950 times. Thus the executable component contributes no observed runtime intervention to the final evaluation.
+
+Both repair conditions conduct four mature comparisons, each planning 12 candidate executions on the six selection tasks. All 48 GNOSIS plans start at the task beginning because the changed version includes globally active units. No historical execution is reused. The same counts hold for the global validation condition. Table~\ref{tab:selection-evolution} gives the release progression and the actual settled resource use. Selection means describe the accepted release sequence; the final comparison in each condition has candidate and incumbent means both equal to 1.0, producing abstention under the strict-improvement rule.
+
+In chronological order, the four GNOSIS comparisons have incumbent/candidate success counts of $10/9$, $10/11$, $11/12$, and $12/12$, each out of 12 executions per side. The middle two candidates are accepted. Global has counts of $10/9$, $10/10$, $10/12$, and $12/12$; only the third candidate is accepted. Equal aggregate counts in Global's second comparison conceal a task-level regression, which prevents release under the zero-regression condition. Both conditions therefore finish at the maximum observed selection score.
+
+\begin{table}[t]
+\centering
+\caption{Selection outcomes under the shared USD 8.5 learning allowance. Expenditure includes learning and selection.}
+\label{tab:selection-evolution}
+\footnotesize
+\begin{tabularx}{\columnwidth}{@{}lXX@{}}
+\toprule
+Quantity & Global & GNOSIS \\
+\midrule
+Settled expenditure (USD) & 3.028831 & 4.310552 \\
+Accepted releases & 1 & 2 \\
+Mature comparisons & 4 & 4 \\
+New candidate executions & 48 & 48 \\
+Reused executions & 0 & 0 \\
+Accepted selection means & $0.8333\to1.0$ & $0.8333\to0.9167\to1.0$ \\
+Releases per USD & 0.330160 & 0.463978 \\
+Unspent allowance (USD) & 5.471169 & 4.189448 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The intermediate evaluation compares an early version with the working candidate on the six marked development tasks. Strict success increases from four to five tasks, and mean partial credit increases from 0.934524 to 0.958333. The learning-path assignment and prepaid-amortization tasks change from failure to success. The customer-milestone task changes from success to failure, with partial credit 0.75. The remaining three tasks remain successful. These transitions characterize the intermediate working candidate, whose fingerprint differs from the final released version.
+
+\section{Cost accounting}\label{app:cost}
+
+Resource comparisons use settled token charges at fixed reference rates: CNY 1 per million uncached input tokens, CNY 0.02 per million cached input tokens, and CNY 4 per million output tokens. USD learning allowances are converted at CNY 7.1 per USD. Table~\ref{tab:stage-costs} separates experience formation from final execution. Selection charges are included in the learning-and-selection column and are also shown separately to expose that component of the total. Intermediate evaluation and fixed-candidate retesting are distinct stages.
+
+\begin{table*}[t]
+\centering
+\caption{Settled reference expenditure by condition and stage, in CNY. The selection column is a subset of learning and selection and is not added again in the total.}
+\label{tab:stage-costs}
+\small
+\begin{tabular}{@{}lrrrrrr@{}}
+\toprule
+Condition & \shortstack{Learning and\\selection} & \shortstack{Selection\\subset} & Intermediate & \shortstack{Final\\execution} & \shortstack{Fixed-candidate\\retest} & All stages \\
+\midrule
+Fixed & 6.059709 & 0 & 0 & 28.279199 & 0 & 34.338908 \\
+ACE & 10.170880 & 0 & 0 & 24.111810 & 0 & 34.282690 \\
+Global & 21.504698 & 7.001778 & 0 & 17.350725 & 2.400554 & 41.255977 \\
+GNOSIS & 30.604922 & 5.410830 & 1.472953 & 14.194113 & 1.856502 & 48.128490 \\
+Repeat & 0 & 0 & 0 & 45.831735 & 0 & 45.831735 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+GNOSIS development plus final evaluation costs CNY 46.271988, including intermediate evaluation and excluding the separate fixed-candidate retest. Dividing by 30 assigns CNY 1.542400 to each repeated-attempt task. The repeated-attempt condition spends CNY 45.831735 in total, or CNY 1.527725 per task, leaving 0.951445\% of its allocation unused. The measured amortization curve has no crossing over the 1--30 task range. Mean frozen execution charges are CNY 0.188528 for Fixed, 0.160745 for ACE, 0.115672 for Global, and 0.094627 for GNOSIS.
+
+Official account exports give the cash expenditure in Table~\ref{tab:official-costs}. Dates use UTC+08:00; the October 8 amount is the snapshot available at export. The sum is CNY 206.71348282 across 18,467 requests. Cached input accounts for 91.43\% of the 828,635,115 input tokens. Input cache misses cost CNY 71.026074, cache hits cost CNY 15.15218082, and output costs CNY 120.535228.
+
+\begin{table*}[t]
+\centering
+\caption{Official account usage and actual charges by date (UTC+08:00). Token counts and costs retain the precision of the exported totals.}
+\label{tab:official-costs}
+\small
+\begin{tabular}{@{}lrrrrr@{}}
+\toprule
+Date & Requests & Uncached input tokens & Cached input tokens & Output tokens & Charge (CNY) \\
+\midrule
+2026-10-07 & 4,182 & 31,201,724 & 192,144,768 & 8,017,475 & 67.11451936 \\
+2026-10-08 & 14,285 & 39,824,350 & 565,464,273 & 22,116,332 & 139.59896346 \\
+\midrule
+Total & 18,467 & 71,026,074 & 757,609,041 & 30,133,807 & 206.71348282 \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+The local ledger contains 18,133 call records, of which 18,127 have settled charges totaling CNY 203.837800. Six unsettled reservations sum to CNY 9.727237: CNY 3.286512 for ACE and CNY 6.440725 for Global. Reservations are excluded from every settled total in Table~\ref{tab:stage-costs}. The official exports exceed the local settled reference total by CNY 2.875683 and contain 334 more requests. They provide daily aggregates without request identifiers or experimental-condition fields, so this difference remains at the account level. Condition-level comparisons use the local phase assignments. The local time-of-day estimate of CNY 226.488652 is separate from the official cash total; the daily exported usage reproduces the official charges directly at the stated token prices.

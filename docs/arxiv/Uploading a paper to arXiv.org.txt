@@ -1,0 +1,29 @@
+Uploading a paper to arXiv.org
+Putting a draft of a paper on arXiv.org should be easy, no? Unfortunately, it can be quite tricky, mostly because you have to upload the source for your document. Technically I believe arXiv now lets you upload a PDF file, but there are good reasons not to do this. So here is a list of steps to follow to upload your paper source to arXiv:
+
+make a deep copy of your paper directory. On linux, you can do this with cp -r your_paper_dir tmp; this will create a copy in a folder called tmp. For each of the following steps, work in the tmp version of your source repository. We need to do this because our nice clean repo organization—while useful for working and collaborating—does not play well with arXiv, and we're about to delete/move a bunch of things around.
+if your conference/journal required you to split your supplement/appendix, merge it back in as an appendix so that you generate one PDF file with everything. In particular, there should be an \appendix command after the main paper content in your main.tex file, followed by \input{___} for the .tex source files for your appendices, any \section headings necessary, etc. Make sure the appendix comes after your references.
+if your paper is not published yet, and your conference/journal template has any journal-specific text (e.g. "submitted to the Journal of Blah", "under peer review", etc.) open up the copy of the style file in tmp/ and remove it. If your paper is published, make sure it has the same style as the published paper with the correct journal, volume, etc information in it (so that readers will know it has been published).
+flatten any subdirectory structure and remove subdirectories. For example, if you have your figures in tmp/figures/, you need to move them all to the root folder tmp/, and then delete the empty figures/ folder.
+you will need to edit your .tex files so that they know that the figures are now all in the root directory tmp/
+delete everything that isn't needed to compile your document
+everything you upload will become public, even things that aren't directly used in your document
+make sure to delete hidden files and folders (e.g. the .git/ folder); you can list these using ls -al on the command line.
+make sure to delete unused .tex, .sty, and .cls files. Remember: everything you upload will be public. So if you have unused/old notes in a separate .tex file, those will be included unless you delete the files.
+delete the rendered .pdf of your paper if it's there, and any LaTeX-generated files (.aux, .log, .out, .blg, etc)
+remove all comments (e.g. % this is a latex comment) from all .tex files. Remember: everything you upload will be public!
+add the following line to the end of your main.tex file (after \end{document}) to ensure that arXiv runs pdflatex at least 4 times (needed for autonum and cleveref references to resolve properly).
+
+\typeout{get arXiv to do 4 passes: Label(s) may have changed. Rerun}
+compile your document in the tmp/ folder, and make sure everything looks OK
+
+keep the .bbl file that was just generated; delete everything else that was just generated (e.g., .aux, .log, .pdf, others)
+delete your .bib file; arXiv uses the precompiled bibliography in the .bbl file that you provide
+create a tarball for your paper source. In the tmp/ folder, run tar -cvvf ax.tar *. This will produce a file named ax.tar, which you will upload
+after you upload your tarball, make sure to inspect the list of files that were extracted. Make sure to remove anything that arXiv says is unnecessary.
+after compiling, make sure to look at the output of pdflatex to make sure there are no issues. This part is sometimes a bit tricky. Ask your advisor for help. Also carefully check over the compiled PDF that arXiv generates.
+when you copy the abstract text in the metainfo, remove all LaTeX syntax, and remove all newline breaks and extra whitespace between words. In LaTeX, extra whitespace doesn't matter; on arXiv, it will show up.
+when you copy the title text in the metainfo, remove all LaTeX syntax, and make sure you use initial caps style. E.g., "Slice Sampling for General Completely Random Measures"
+when you copy the author list in the metainfo, remove all LaTeX syntax, and make sure to format the author names in full text with commas and no "and". E.g., "Bob Authorson, Alice van de Paper, Rebecca Writezki"
+when choosing a subject area for your paper, make sure to consult your advisor first
+after submission, when the paper is posted, make sure to send all of your coauthors the paper password so that they can claim ownership

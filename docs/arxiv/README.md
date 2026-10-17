@@ -1,29 +1,27 @@
-## About
+# arXiv 投稿文件 / arXiv submission files
 
-Author support service provides LaTeX style files and `.tex` file templates designed for *ECAI* conference proceedings.
+**When Evaluation Prevents Learning: Functional Accumulation in Self-Evolving Agents**
 
-## Contents
+Zonghe Wu · University College Dublin & Chang'an University
 
-The following files are given in the repository (or directly in `.zip` archive):
+`gnosis.pdf` 为完整论文，`gnosis-arxiv.tar.gz` 为上传源码包。正文入口为 `gnosis.tex`，附录为 `appendix.tex`。
 
-- `ecai.cls` - LaTeX style file designed for *ECAI* conference proceedings. Please do not change it.
-  This file is already loaded in the respective template file;
-- `ecai-sample-and-instructions.pdf` - instructions for the preparation of a camera-ready paper in LaTeX.
-  This document contains useful information regarding the structure of your document,
-  proper tagging style, layout features, etc;
-- `ecai-sample-and-instructions.tex` - the main template file should be used for article preparation and
-  the source file for the instructions paper `ecai-sample-and-instructions.pdf` simultaneously;
-- `ecai.bst`, `ecai.bib` - BibTeX related files. If your bibliography is structured in BibTeX format,
-  loading your `*.bib` file and provided BibTeX style `ecai.bst` allows you to get the final format of the bibliography.
-  Please note that `bibtex` program should be used to generate the `*.bbl` file. `ecai.bib` is the minimal sample of `*.bib` file.
-- `ecai-sample-and-instructions.bbl` is a sample bibliography file created by BibTeX using the `ecai.bst` file.
+`gnosis.pdf` is the complete paper. `gnosis-arxiv.tar.gz` is the source bundle for upload. The main source is `gnosis.tex`; the appendix is `appendix.tex`.
 
-## Setup
+正文直接读取 `gnosis.bbl`。`references.bib` 保留可编辑文献库，修改文献后需同步生成 `gnosis.bbl`。四幅图片与 ECAI 模板依赖均位于当前目录，上传包包含全部编译依赖。
 
-- Clone the repository or download the `.zip` archive;
-- Read the instructions (`ecai-sample-and-instructions.pdf`) for the preparation of your LaTeX document;
-- Use the template file `ecai-sample-and-instructions.tex` to prepare your manuscript.
+The manuscript reads `gnosis.bbl` directly. `references.bib` preserves the editable bibliography; bibliography edits require regenerating `gnosis.bbl`. All four figures and the ECAI template dependencies are in this directory. The upload bundle contains every compilation dependency.
 
-## Bug reports
+在当前目录编译两次，输出到 `.build/gnosis.pdf`：
 
-Please submit bug report, issues or feature requests to `latex-support@vtex.lt`.
+Compile twice from this directory. The output is `.build/gnosis.pdf`:
+
+```bash
+mkdir -p .build
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=.build gnosis.tex
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=.build gnosis.tex
+```
+
+研究代码与分析入口见[仓库说明](../../README.md)。
+
+See the [repository README](../../README.md) for research code and analysis commands.

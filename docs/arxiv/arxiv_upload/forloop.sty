@@ -1,8 +1,0 @@
-\NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{forloop}[2006/10/05 v3.0 Iterate using loops]
-\RequirePackage{ifthen}
-\newcommand{\forloop}[5][1]{%
-\setcounter{#2}{#3}%
-\ifthenelse{#4}{#5\addtocounter{#2}{#1}%
-\forloop[#1]{#2}{\value{#2}}{#4}{#5}}{}}
-\endinput

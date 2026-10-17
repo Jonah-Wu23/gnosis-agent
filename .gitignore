@@ -27,3 +27,20 @@ experiments/
 host/.tmp_validate/
 host/.tmp_selftest/
 .offline_checks/
+
+# 论文编译与页面预览
+docs/ecai2027/.build/
+docs/arxiv/.build/
+docs/arxiv/*.log
+
+# 本地下载的参考文献与投稿指南
+docs/papers/
+docs/texsupport.iospress-ecai-master/
+docs/arxiv/guides/
+
+# 本地检索草稿与审阅笔记
+docs/research-find/
+docs/research-new/
+docs/完整数据挖掘研究方案.md
+docs/斯坦福审稿.txt
+docs/独立解释.md

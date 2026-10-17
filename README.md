@@ -1,120 +1,134 @@
 # GNOSIS Agent
 
-**当前状态（2026-10-07）**：模型服务切换到 DeepSeek 官方 API（`deepseek-flash`），费用上限全部解除，此前全部实验结果报废归档到 `archive/2026-10-07-void/`。当前程序版本 `0d4c2efb…` 已通过 103 项无模型调用的离线检查（`state/research_offline_check.json`），完成 4 组 5 次留出重复评估设计、逐条证据复用、任务级配对置换统计契约与账本全口径汇总修复，B1 基线（30 题通过率 70%）与历史执行断点无损复用。断点按完整消息校验，修复提议显式允许动态计费字段变化；严格续跑缺少响应时保留账本并报错。交付记录见 [docs/GNOSIS-官方API切换交付-2026-10-07.md](docs/GNOSIS-官方API切换交付-2026-10-07.md)，科研计划见 [docs/GNOSIS-科研计划.md](docs/GNOSIS-科研计划.md)，产品边界见 [docs/GNOSIS-产品PRD.md](docs/GNOSIS-产品PRD.md)，改造依据见 [docs/GNOSIS-先导后计划.md](docs/GNOSIS-先导后计划.md)。
+GNOSIS 研究 AI Agent 如何把执行经验写入持久组件，以及自动评价如何影响后续学习。
 
-## 一句话
+GNOSIS studies how AI agents turn execution experience into persistent components and how automated evaluation shapes subsequent learning.
 
-GNOSIS 让 Agent 连续修复、组合经验：经验由可执行组件承载，组件第一次实际影响执行的扩展位置决定哪些历史执行必须重跑，省下的验证费用投入继续修复。
+## 论文 / Paper
 
-## 目录
+**When Evaluation Prevents Learning: Functional Accumulation in Self-Evolving Agents**
 
-| 位置 | 用途 |
+Zonghe Wu · University College Dublin & Chang'an University
+
+论文准备提交至 arXiv cs.AI。更新日期：2026-10-17。
+
+The manuscript is prepared for submission to arXiv cs.AI. Updated: 2026-10-17.
+
+| 文件 / File | 用途 / Contents |
 |---|---|
-| `engine/` | 执行、自主修复、激活边界、发布门禁与研究编排 |
-| `host/` | Cordis 插件宿主与 QuickJS 组件隔离运行库 |
-| `config/research_selection.json` | 固定任务划分（30 开发 / 6 独立选择 / 30 最终留出 / 6 中途检查）、组额度与上游提交 |
-| `config/runtime.json` | 私有运行配置（已忽略） |
-| `state/` | 研究账本 `research_ledger.sqlite` 与离线准入证明，受测 AI 无权访问 |
-| `experiments/research/` | 正式实验输出，首次 `baseline` 或 `run` 时创建 |
-| `.offline_checks/` | 离线检查的临时工作区 |
-| `archive/2026-10-07-void/` | 报废的先导与旧账本；先导轨迹只作离线机制检查样本 |
-| `scratch/AutomationBench/`、`scratch/ace/`、`scratch/StarHarness/` | 固定版本的上游代码 |
+| [gnosis.pdf](docs/arxiv/gnosis.pdf) | 论文正文与附录 / Paper and appendix |
+| [gnosis.tex](docs/arxiv/gnosis.tex) · [appendix.tex](docs/arxiv/appendix.tex) | 最终 LaTeX 源码 / Final LaTeX sources |
+| [gnosis-arxiv.tar.gz](docs/arxiv/gnosis-arxiv.tar.gz) | arXiv 上传包 / Source bundle for arXiv |
+| [references.bib](docs/arxiv/references.bib) | 可编辑参考文献；正文直接读取 `gnosis.bbl` / Editable bibliography; the manuscript reads `gnosis.bbl` directly |
 
-| 模块 | 职责 |
+研究覆盖 2,468 次执行。在一项 HR 任务中，Agent 遗漏了应有的延期记录，仍通过全部九条测试。在 sales 任务中，过时的测试促使 Agent 采用违反最新业务指令的公告格式。评价中的错误会影响 Agent 发现问题，也会进入其后续沿用的经验。
+
+The study covers 2,468 executions. In an HR task, the agent omitted a required deferral record and still passed all nine tests. In a sales task, outdated tests encouraged the agent to adopt an announcement format that violated the latest business instruction. Evaluator errors affect which problems an agent recognizes and can become part of the experience it reuses.
+
+执行记录还显示，继承组件累计调用 27,500 次，实际效果为零。整理后的反馈没有提高新任务上的成功率。将前次轨迹与评价反馈用于同一道任务的下一次尝试，满足业务要求的执行次数由 41/72 增至 49/72。
+
+The execution records also show 27,500 invocations of an inherited component with zero effects. Organized feedback did not improve success on new tasks. Giving the agent its previous trajectory and evaluator feedback for another attempt at the same task raised confirmed business success from 41/72 to 49/72.
+
+## 目录 / Repository layout
+
+| 位置 / Path | 内容 / Contents |
 |---|---|
-| `engine/activation.py` | 作用域互斥、扩展位置登记、边界轨迹、验证范围与证据复用 |
-| `engine/extension_protocol.py` | 可执行组件 E 的输出协议 |
-| `engine/automation_adapter.py` | AutomationBench 接入层：成功、错误、搜索与组件调用统一经过扩展位置 |
-| `engine/evolution.py` | 工作/发布/冻结三版本、成熟条件、对称配对比较、研究预算 |
-| `engine/run_research.py` | 统一入口、修复控制器、实验编排、费用汇总 |
-| `engine/research_evaluator.py` | 原装任务与评分器上的执行记录 |
-| `engine/research_model.py` | 修复请求断点与官方 ACE 传输 |
-| `engine/research_retest.py` | 同一批冻结候选上的全局重测与按影响范围重测 |
-| `engine/research_offline.py` | 无模型调用的离线检查 |
-| `engine/research_plan.py`、`engine/research_upstream.py` | 任务划分、组额度、上游固定提交 |
+| `docs/arxiv/` | 最终投稿文件 / Final submission files |
+| `docs/ecai2027/` | 排版工作文件与可编辑图片 / Working manuscript files and editable figures |
+| `engine/` | Agent 执行、持久修复与论文分析 / Agent execution, persistent repair, and paper analysis |
+| `host/` | Cordis 组件宿主与 QuickJS 隔离运行库 / Cordis component host and QuickJS isolation runtime |
+| `config/research_selection.json` | 固定任务划分与实验条件 / Fixed task splits and experimental conditions |
+| `candidates/` | 基础组件 / Base components |
 
-## 入口
+本地 `experiments/` 保存轨迹与分析产物，`state/` 保存费用账本和运行状态。离线重算需要这些原始材料。仓库收录论文与分析代码；运行数据保存在本地，并由 `.gitignore` 排除。下载的参考论文和编译缓存也保存在本地。
 
-全部命令在 WSL 中执行：
+Local `experiments/` contains trajectories and analysis outputs; `state/` contains billing ledgers and execution state. Offline recalculation requires these original materials. The repository contains the paper and analysis code. Runtime data, downloaded reference papers, and build caches stay local through `.gitignore`.
+
+## 编译论文 / Build the paper
+
+在 `docs/arxiv/` 中使用 pdfLaTeX 连续编译两次，输出为 `.build/gnosis.pdf`。上传包包含正文读取的参考文献与全部图片，可独立编译。
+
+Run pdfLaTeX twice from `docs/arxiv/`. The output is `.build/gnosis.pdf`. The upload bundle includes the bibliography and every figure needed to compile independently.
 
 ```bash
-cd '/mnt/e/AI/GNOSIS Agent'
+mkdir -p .build
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=.build gnosis.tex
+pdflatex -interaction=nonstopmode -halt-on-error -output-directory=.build gnosis.tex
+```
+
+## 重算论文分析 / Recalculate the analysis
+
+在已有完整实验材料的 WSL 环境中，从仓库根目录执行：
+
+From the repository root, in the WSL environment containing the complete experimental materials:
+
+```bash
+export PYTHONPATH=scratch/AutomationBench:.
+GNOSIS_DISABLE_MODEL_CALLS=1 scratch/AutomationBench/.venv/bin/python -m engine.negative_result_offline --all
+```
+
+命令先检查保存的官方重放，再重算业务结果与统计表，输出到 `experiments/negative_result_offline/`，模型调用数为零。
+
+The command checks the saved official replay, recalculates business outcomes and statistical tables, and writes to `experiments/negative_result_offline/` with zero model calls.
+
+| 模块 / Module | 职责 / Purpose |
+|---|---|
+| `negative_result_offline.py` | 分析总入口 / Analysis entry point |
+| `negative_result_replay.py` | 官方环境动作重放 / Action replay in the official environment |
+| `negative_result_business.py` · `negative_result_evaluation.py` | 业务要求与评价错误分析 / Business obligations and evaluator defects |
+| `negative_result_history.py` · `negative_result_requirements.py` | 编辑谱系与要求完成路径 / Edit lineage and obligation completion paths |
+| `negative_result_components.py` | 组件调用与实际效果 / Component invocations and effects |
+| `negative_result_transfer.py` · `negative_result_completion.py` | 迁移分析与统计整合 / Transfer analysis and statistical integration |
+| `negative_result_figures.py` | 分析图表 / Analysis figures |
+
+表中模块均位于 `engine/`。研究过程与证据入口见 [2026-10-16 证据记录](docs/GNOSIS-负结果论文证据稿-2026-10-16.md)。
+
+All listed modules are in `engine/`. Research notes and evidence locations are recorded in the [2026-10-16 evidence notes](docs/GNOSIS-负结果论文证据稿-2026-10-16.md) in Chinese.
+
+## Agent 实验 / Agent experiments
+
+系统通过可执行组件保存经验，按组件首次影响执行的位置确定重测范围。实验使用 AutomationBench 的 API 工具集，每题最多 50 步，沿用基准原有的测试。模型使用 DeepSeek 官方 API 的 `deepseek-flash`，开启思考模式，`reasoning_effort=high`，温度为 1。
+
+The system stores experience in executable components and determines retest scope from the first point at which a component affects execution. Experiments use AutomationBench's API toolset, a maximum of 50 steps per task, and the benchmark's original tests. The model is `deepseek-flash` through the official DeepSeek API, with thinking enabled, `reasoning_effort=high`, and temperature 1.
+
+上游固定版本由 `engine/research_upstream.py` 校验。Python 补充依赖见 `engine/automation_requirements.txt`；AutomationBench 自身依赖由上游 `uv.lock` 固定。真实模型调用读取本地私有配置与凭据。
+
+`engine/research_upstream.py` checks the pinned upstream revisions. Additional Python dependencies are listed in `engine/automation_requirements.txt`; AutomationBench's own dependencies are pinned by its upstream `uv.lock`. Live model calls read local private configuration and credentials.
+
+| 上游 / Upstream | 提交 / Revision | 用途 / Purpose |
+|---|---|---|
+| [AutomationBench](https://github.com/zapier/AutomationBench) | `4a8e106` | 任务环境与评分器 / Task environments and evaluator |
+| [StarHarness](https://github.com/ServiceNow/StarHarness) | `a56d8f6` | Adapter 契约与发布审查 / Adapter contract and promotion review |
+| [ACE](https://github.com/ace-agent/ace) | `82709de` | 官方 Reflector 与 Curator / Official Reflector and Curator |
+
+在配置完成的 WSL 环境中运行：
+
+Run in the configured WSL environment:
+
+```bash
 export PYTHONPATH=scratch/AutomationBench:.
 PY=scratch/AutomationBench/.venv/bin/python
 ```
 
-| 命令 | 作用 | 调用模型 |
+| 命令 / Command | 用途 / Purpose | 模型调用 / Model calls |
 |---|---|---|
-| `$PY -m engine.run_research prepare` | 生成并核对固定任务划分 | 否 |
-| `GNOSIS_DISABLE_MODEL_CALLS=1 $PY -m engine.run_research unittests` | 秒级单元检查（43 条） | 否 |
-| `GNOSIS_DISABLE_MODEL_CALLS=1 $PY -m engine.run_research offline` | 机制检查（97 条），写准入证明 | 否 |
-| `GNOSIS_DISABLE_MODEL_CALLS=1 $PY -m engine.run_research offline --replay` | 追加 30 题先导轨迹全量重放 | 否 |
-| `$PY -m engine.run_research baseline` | 只跑 B1（30 道开发题）与基线门槛，打印结果与账本 | 是 |
-| `$PY -m engine.run_research run` | 完整付费实验，B1 按断点复用 | 是 |
-| `$PY -m engine.run_research retest` | 单独重跑固定候选重测比较（`run` 已包含） | 是 |
+| `$PY -m engine.run_research prepare` | 核对固定任务划分 / Check fixed task splits | 否 / No |
+| `GNOSIS_DISABLE_MODEL_CALLS=1 $PY -m engine.run_research offline` | 检查执行机制 / Check execution mechanisms | 否 / No |
+| `$PY -m engine.run_research baseline` | 基线执行 / Baseline execution | 是 / Yes |
+| `$PY -m engine.run_research run` | 按断点运行原始实验 / Run the original experiment with checkpoint resume | 是 / Yes |
+| `$PY -m engine.evo_path extract` | 提取历史演化谱系 / Extract historical evolution lineage | 否 / No |
+| `$PY -m engine.evo_path_analysis analyze` | 分析历史演化谱系 / Analyze historical evolution lineage | 否 / No |
 
-`run` 启动时核对准入证明与当前程序版本一致，代码一改就要重跑 `offline`。中断后再次执行 `run`，已完成的执行、修复操作和请求都按断点复用，不重复计费。
+宿主检查在 `host/` 中执行 `npm run typecheck` 和 `npm run selftest`。研究设计见 [科研计划](docs/GNOSIS-科研计划.md)，产品范围见 [产品 PRD](docs/GNOSIS-产品PRD.md)。这些研究过程文档保留中文原文。
 
-## 实验编排
+Run `npm run typecheck` and `npm run selftest` in `host/` to check the component host. The [research plan](docs/GNOSIS-科研计划.md) and [product PRD](docs/GNOSIS-产品PRD.md) describe the study design and product scope. These research process documents retain their Chinese originals.
 
-`run` 按顺序执行：
+## 作者与许可 / Author and license
 
-1. B1：固定 Agent 在 30 道开发题上取修正基线，结果写入 `baseline_gate.json`。截断占失败一半及以上时停止，学习不开跑。
-2. 官方 ACE、全局验证组与完整 GNOSIS 三个学习组同时运行。ACE 逐题更新手册；两个修复组各自连续修复。来源题完整成功后才能发起成熟版本比较；学习支出过组额度一半时执行中途检查。
-3. 四组在 30 道最终留出题上评估冻结版本。
-4. 固定候选重测：每组最后一次成熟版本比较的两个版本，分别做全局重测与按影响范围重测，结果写入 `retest.json`。
-5. 等美元重复执行／修订组：每道留出题的额度为 GNOSIS 全部费用（学习、验证、中途检查、留出）摊到每题。
-6. 汇总写入 `summary.json`：各组通过率、费用明细、有效进化次数、验证执行与复用数、终止原因、盈亏平衡曲线。
+Zonghe Wu（吴宗河）· University College Dublin & Chang'an University
 
-| 实验组 | 承担的比较 | 学习与验证合计额度 |
-|---|---|---|
-| 固定 Agent | 修正执行条件后的真实起点 | 2.0 |
-| 官方 ACE | 可执行经验相对文本记忆的价值 | 3.0 |
-| 全局验证 | 修复器本身带来的收益 | 8.5 |
-| 完整 GNOSIS | 限定影响范围后学习收益与验证费用的变化 | 8.5 |
-| 等美元重复执行／修订 | 额外费用用于持续学习是否值得 | 按 GNOSIS 全部费用摊到每题 |
+[zonghe.wu@ucdconnect.ie](mailto:zonghe.wu@ucdconnect.ie) · [个人主页 / Website](https://jonah-wu23.github.io/)
 
-全局验证组与 GNOSIS 只差验证范围。两组的学习与验证共用一个组额度，GNOSIS 省下的验证费用直接变成更多修复次数，这正是要测量的量。
+本项目采用 [MIT License](LICENSE)。上游组件与论文模板保留各自许可。
 
-## 固定条件
-
-- 基准：AutomationBench 提交 `4a8e106`，`--toolset api`，最多 50 步，严格断言评分。
-- 模型：DeepSeek 官方 API `https://api.deepseek.com`，`deepseek-flash`（DeepSeek-V4.1-Flash），思考模式开启（`extra_body.thinking.type=enabled`），`reasoning_effort=high`，温度 1，单次输出上限 393216（官方最大值，上下文 1M）。工具调用轮次之间完整回传 `reasoning_content`。
-- 终止状态分为截断、正常完成、工具执行失败三类。
-- 任务执行最多 8 路并行，三个学习组共用名额；组内修复步骤按顺序。
-- 服务断流最多重试 10 次，指数退避 2→60 秒；AI 格式错误重试 1 次。
-- 修复器输入使用精简证据：完整作答轨迹、断言结果、扩展位置序列与干预记录；逐步重复提示的 `wire_trace` 只留在磁盘。
-
-## 费用
-
-费用不设上限：总额、时间窗口、单题都不拦截，账本 `state/research_ledger.sqlite` 只记账。唯一保留的额度是上表的组学习额度（USD 参照价），它是对照条件，用完即结束该组学习并冻结发布版本。
-
-| deepseek-flash 每百万 token | 闲时 | 高峰（北京时间工作日 9–12、14–18 点） |
-|---|---|---|
-| 输入（缓存命中） | 0.02 元 | 0.04 元 |
-| 输入（缓存未命中） | 1 元 | 2 元 |
-| 输出（含思维链） | 4 元 | 8 元 |
-
-账本 `cost` 按闲时价折成美元（7.1 元/美元），组额度与等预算比较只用它；`billed` 按实际时段报告扣费。整套实验按先导 token 用量估算闲时约 250 元，安排在闲时运行。余额耗尽时 API 拒绝请求，进程退出、状态保留，充值后再次运行按断点续跑。
-
-## 先导结论（已报废，只作改造依据）
-
-先导版本 `fa98b99a…`（Command Code 网关，温度 0，输出上限 8192）的干净基线在 30 题上严格通过 15 题，3 轮准入提出 3 个候选，接受 0 个。
-
-| 先导证据 | 改造 |
-|---|---|
-| 15 道失败题中 9 道以 `finish_reason=length` 结束 | 输出上限 8192 → 393216，基线门槛检查截断占比 |
-| 来源题失败后仍跑独立检查，占先导费用 68.6% | 来源题完整成功后才进入验证 |
-| 修复只覆盖编译错误，没有语义修复循环 | 连续自主修复，失败反馈返回同一修复过程 |
-| 231 次组件调用只有 1 次实际新增提示 | 可执行组件 E：操作函数、批量调用、观测改写，记录干预后的实际动作 |
-| `api_fetch` 错误被跳过，`api_search` 不进干预路径 | 所有工具观测统一经过 `after_call` |
-| 3 个候选全部 `GLOBAL` | `GLOBAL` 与局部作用域互斥，作用域越广验证越贵 |
-
-## 开源复用
-
-| 上游 | 提交 | 用途 |
-|---|---|---|
-| [AutomationBench](https://github.com/zapier/AutomationBench)（MIT） | `4a8e106` | 环境、工具、断言、runner |
-| [StarHarness](https://github.com/ServiceNow/StarHarness)（MIT） | `a56d8f6` | `BenchmarkAdapter` 契约、任务集校验、`decide()` 与发布审查；修复主循环由本项目实现 |
-| [ACE](https://github.com/ace-agent/ace)（Apache-2.0） | `82709de` | 官方 `Reflector`、`Curator`，请求经本项目计费 |
-| [SAGE](https://arxiv.org/abs/2609.36043) | — | 成熟版本配对统计 |
+This project uses the [MIT License](LICENSE). Upstream components and manuscript templates retain their respective licenses.

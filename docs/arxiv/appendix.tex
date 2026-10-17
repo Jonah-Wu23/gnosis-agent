@@ -1,188 +1,377 @@
-\section{Evaluation protocol}\label{app:protocol}
+\setcounter{table}{0}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\theHtable}{S\arabic{table}}
 
-The task partition uses seed 100 and the AutomationBench revision
-\texttt{4a8e1061254004d9dac807054eed33fad7d1ff14}.
-Table~\ref{tab:task-partition} gives every task identifier. Each domain contributes five development tasks, one independent selection task, and five final evaluation tasks. The six intermediate evaluation tasks are the first development task in each domain. Their evaluation outcomes are stored separately and are not supplied as repair feedback. Development evidence for those tasks remains available through the ordinary learning procedure.
+\section{Execution conditions and task identities}
+
+The official benchmark commit begins \texttt{4a8e10612540};
+the common ancestor identity begins \texttt{0faf0fdd660e};
+the controlled experiment implementation identity begins \texttt{3e73795f59e9}.
+These 12 character prefixes distinguish the versions used here. Full identities remain in the frozen execution protocol and database.
+The execution order and comparison rules were sealed on 14 October 2026, using seed 20261014. Table~\ref{tab:tasks} lists the six sources and 24 transfer tasks. Source tasks belong to the earlier development split. Transfer tasks have no prior recorded exposure, including in records excluded from performance analysis.
+
+The six blocks each contain one source first run, four source retests, and 72 transfer or retry runs. The common model endpoint is \url{https://api.deepseek.com}, model identifier \texttt{deepseek-flash}. Requests enable thinking at high reasoning effort, temperature 1, and a maximum of 393,216 output tokens. Tool rounds retain reasoning content. The benchmark allows 50 agent steps with its original API tools and service permissions. Each run resets the initial world and component state. Service interruptions allow ten retries with exponential backoff from two to 60 seconds; malformed model output allows one retry. Failed attempts retain their charges.
 
 \begin{table*}[t]
 \centering
-\caption{Fixed task partition. Identifiers are shown in full. A dagger marks the six development tasks used for intermediate evaluation. The development and final evaluation columns each contain 30 tasks; the independent selection set contains six tasks.}
-\label{tab:task-partition}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabularx}{\textwidth}{@{}XX@{}}
+\caption{Frozen task identities. Transfer task names share the domain prefix shown in the first column. Each transfer task has three runs in each of six conditions.}
+\label{tab:tasks}
+\small
+\renewcommand{\arraystretch}{1.16}
+\begin{tabularx}{\textwidth}{@{}lLL@{}}
 \toprule
-Development & Final evaluation \\
+Domain & Source task suffix & Transfer task suffixes\\
 \midrule
-\path{sales.linkedin_profile_enrichment}$^{\dagger}$ & \path{sales.soft_matching} \\
-\path{sales.chatgpt_contract_summary} & \path{sales.linkedin_event_promotion} \\
-\path{sales.slack_deal_notification} & \path{sales.cross_reference_validation} \\
-\path{sales.sheets_reconciliation} & \path{sales.docusign_void_resend} \\
-\path{sales.mark_vip_emails_read} & \path{sales.send_customer_email} \\
+Finance & \path{xero_credit_allocation} &
+\path{xero_multicurrency_payment}\newline
+\path{xero_quote_to_invoice}\newline
+\path{qb_void_stale_invoices}\newline
+\path{employee_reimbursement}\\
 \addlinespace
-\path{operations.facebook_roas_monitoring}$^{\dagger}$ & \path{operations.space_utilization_analysis} \\
-\path{operations.purchase_order_three_way_match} & \path{operations.office_supply_budget_monitoring} \\
-\path{operations.twilio_afterhours_incident} & \path{operations.fire_extinguisher_inspection_schedule} \\
-\path{operations.drive_slack_dock_schedule} & \path{operations.hubspot_personalized_outreach} \\
-\path{operations.calendar_slack_training} & \path{operations.sheets_asana_approved_request} \\
+HR & \path{airtable_learning_path_assignment} &
+\path{benefits_open_enrollment_processing}\newline
+\path{compliance_training_enrollment}\newline
+\path{intern_program_coordination}\newline
+\path{offboarding_multi_system}\\
 \addlinespace
-\path{hr.airtable_learning_path_assignment}$^{\dagger}$ & \path{hr.slack_channel_onboarding} \\
-\path{hr.promotion_announcement} & \path{hr.performance_feedback_logging} \\
-\path{hr.airtable_skills_matrix} & \path{hr.employee_request_routing} \\
-\path{hr.policy_update_distribution} & \path{hr.interview_scheduling} \\
-\path{hr.mandatory_meeting_compliance} & \path{hr.salary_adjustment_processing} \\
+Marketing & \path{customer_milestone} &
+\path{event_sponsorship_screen}\newline
+\path{trial_extension_processing}\newline
+\path{news_digest_dedup}\newline
+\path{campaign_handoff}\\
 \addlinespace
-\path{marketing.customer_milestone}$^{\dagger}$ & \path{marketing.social_engagement_response} \\
-\path{marketing.landing_page_conversion} & \path{marketing.partner_comarketing} \\
-\path{marketing.competitive_response_plan} & \path{marketing.event_followup_personalization} \\
-\path{marketing.seasonal_campaign} & \path{marketing.influencer_contract_tracking} \\
-\path{marketing.content_syndication} & \path{marketing.social_content_calendar} \\
+Operations & \path{purchase_order_three_way_match} &
+\path{equipment_calibration_scheduling}\newline
+\path{fleet_vehicle_maintenance}\newline
+\path{hazmat_shipping_compliance}\newline
+\path{compressed_gas_cylinder_tracking}\\
 \addlinespace
-\path{support.gorgias_channel_consolidation}$^{\dagger}$ & \path{support.zendesk_maintenance_notify} \\
-\path{support.hiver_coaching_pipeline} & \path{support.reamaze_intercom_migration} \\
-\path{support.freshdesk_sla_monitoring} & \path{support.helpscout_jira_bugs} \\
-\path{support.intercom_freshdesk_escalation} & \path{support.hiver_response_sla} \\
-\path{support.gorgias_freshdesk_migration} & \path{support.zendesk_hubspot_churn_risk} \\
+Sales & \path{slack_deal_notification} &
+\path{multi_hop_lookup}\newline
+\path{demo_scheduling}\newline
+\path{docusign_completion_processor}\newline
+\path{slack_channel_for_new_account}\\
 \addlinespace
-\path{finance.prepaid_amortization}$^{\dagger}$ & \path{finance.wave_client_statement} \\
-\path{finance.project_profitability} & \path{finance.qb_undeposited_funds} \\
-\path{finance.invoice_file_organization} & \path{finance.gl_variance_analysis} \\
-\path{finance.qb_invoice_from_orders} & \path{finance.monday_project_billing} \\
-\path{finance.xero_credit_allocation} & \path{finance.vendor_payment_approval} \\
-\midrule
-\multicolumn{2}{@{}l}{Independent selection} \\
-\path{sales.chatgpt_lead_summary_generator} & \path{operations.cross_department_budget_reconciliation} \\
-\path{hr.compliance_training_enforcement} & \path{marketing.content_localization} \\
-\path{support.helpcrunch_engagement_scoring} & \path{finance.dept_expense_rollup} \\
+Support & \path{gorgias_channel_consolidation} &
+\path{reamaze_cross_platform_dedup}\newline
+\path{freshdesk_auto_merge}\newline
+\path{zendesk_cross_org_merge}\newline
+\path{gorgias_defect_tracking}\\
 \bottomrule
 \end{tabularx}
 \end{table*}
 
-All four frozen conditions use the official DeepSeek API with model identifier \texttt{deepseek-flash}, reasoning enabled at \texttt{high} effort, temperature 1, and a maximum output of 393,216 tokens per response. This output limit is distinct from the model's context capacity. The benchmark uses the \texttt{api} toolset and allows at most 50 agent steps. Each evaluation starts with a fresh environment and fresh component state. Previous evaluation responses and trajectories are absent from subsequent independent executions. These conditions define the comparison: changing the initial state or exposing prior evaluation outcomes changes the task-solving distribution being measured.
+The controlled follow-up starts from the ancestor inherited from earlier GNOSIS learning. Each condition receives a fresh editing opportunity using the present source first run. A source pass leaves all four deployments at the ancestor. A source failure triggers organization and candidate generation, after which all four versions are sealed together. Format failures also deploy the ancestor. The frozen source retest schedule therefore remains complete even when editing never begins.
 
-The frozen conditions each run the same 30 tasks five times, yielding 150 executions per condition and 600 executions in total. All 600 terminate normally. The development execution check completes 30 tasks, with 21 strict successes and no truncation among the nine failures. Final evaluation uses the frozen versions in Table~\ref{tab:frozen-versions}; intermediate evaluation uses a separate working candidate, \texttt{986335b24f89}. Fingerprints are abbreviated to 12 hexadecimal characters, which distinguish all versions listed here. The experiment implementation fingerprint begins \texttt{0d4c2efbc3b1}, and its Git history includes commit \texttt{4f742b9}.
+\section{Source outcomes and candidate implementation}
+
+Table~\ref{tab:sources} separates strict scoring from complete business review on the source first runs. Marketing and operations pass under both. HR passes strictly while omitting the sabbatical deferral. Sales fails strictly while satisfying the latest Director instruction under the main interpretation. In the executed workflow, finance, sales, and support trigger editing.
 
 \begin{table}[t]
 \centering
-\caption{Frozen versions used in all five independent repetitions. Text and executable counts describe persistent units.}
-\label{tab:frozen-versions}
-\footnotesize
-\begin{tabular}{@{}llrr@{}}
+\caption{Source first run and deployed versions. S denotes strict success; B denotes confirmed business success. Candidate and ancestor counts refer to four planned slots per source.}
+\label{tab:sources}
+\small
+\renewcommand{\arraystretch}{1.13}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lrrrr@{}}
 \toprule
-Condition & Fingerprint & Text & Executable \\
+Source & S & B & Candidates & Ancestor\\
 \midrule
-Fixed & \texttt{4f53cda18c2b} & 0 & 0 \\
-ACE & \texttt{9b29cc26db48} & 1 & 0 \\
-Global & \texttt{341e767a59ec} & 17 & 0 \\
-GNOSIS & \texttt{0faf0fdd660e} & 13 & 1 \\
+Finance & 0 & 0 & 3 & 1\\
+HR & 1 & 0 & 0 & 4\\
+Marketing & 1 & 1 & 0 & 4\\
+Operations & 1 & 1 & 0 & 4\\
+Sales & 0 & 1 & 3 & 1\\
+Support & 0 & 0 & 3 & 1\\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
-The repeated-attempt condition retains the preceding trajectory for revision and scores the last attempt on each task. It makes 354 attempts: 347 end normally, six reach the allocated task budget, and one is truncated. The 30 final outcomes comprise 23 normal terminations, six budget terminations, and one truncation. Its success rate therefore uses 30 final outcomes, while the frozen conditions use 150 independent outcomes summarized within 30 tasks.
+Eighteen editing calls serve 12 triggered slots. Nine calls fail format checks; six slots encounter at least one format failure, and three slots terminate without a legal candidate. R0 has one slot with a format failure, followed by recovery. R1 has five such slots, three of which terminate. The failed deployments are finance F0R1, sales F1R1, and support F0R1.
 
-\section{Statistical results}\label{app:statistics}
+The organized view adds 6,150 serialized characters for finance and 7,100 for sales to the editing payload, increases of 2.92\% and 1.87\%, respectively. Both groups retain the original evidence. Finance produces ten organized items and sales 14. Their source pointers resolve to 55 and 53 verified quotations, respectively. Support produces seven items and 105 verified quotations, covering 33 of its 37 assertions. The omitted citations concern repeated negative logging assertions; the full original evidence still contains them. Source quotations establish provenance, and reading of the complete items checks their meaning.
 
-For task $i$ and condition $g$, strict performance is the mean of the five binary outcomes, $s_{ig}=\frac{1}{5}\sum_{r=1}^{5}y_{igr}$. Partial credit is averaged over the same five repetitions. Comparisons use the 30 task differences $d_i=s_{i,\mathrm{GNOSIS}}-s_{ig}$. The two-sided exact paired permutation test enumerates every sign assignment to nonzero task differences. Paired bootstrap intervals resample the 30 task pairs 200,000 times with NumPy seed 100. This preserves the repeated observations belonging to each task.
+The finance edits address the precedence of credit note detail over list fields and recompute balances. F1R0 also adds an executable detail query that inserts discrepancies into context at task start. The sales edits revise the authority used for notification format and channel choice. The support edits address complete workbook reading and authorized matching for deduplication. Source names and values remain present in some candidates; all 24 transfer tasks receive a reading of candidate content against their own authorized materials.
 
-Table~\ref{tab:complete-statistics} reports all three comparisons for each endpoint. Holm adjustment is performed separately within each endpoint's family of three comparisons. The all-five-success endpoint is binary at the task level and uses the two-sided exact McNemar test. Its discordant counts indicate tasks for which GNOSIS alone or the comparison condition alone succeeds in every repetition. GNOSIS has the highest observed strict success and the most consistently solved tasks; none of the Holm-adjusted comparisons reaches 0.05.
+\section{Derivation of evaluator exclusion}
+\label{sec:exclusion-proof}
+
+Let $h_t$ contain the complete source execution at learning step $t$, including actions and final world state. The official binary score is $Q(h_t)$; the complete business outcome is $B(h_t)$. The follow-up's eligibility rule is $A(h_t)=1-Q(h_t)$. If $A=0$, all four deployments retain the ancestor and no editing request is constructed. Thus, along any observed sequence of evaluator passes, this source produces no version change. Extra editing allowance leaves that control branch unchanged. Other tasks can still supply edits through their own eligibility decisions.
+
+For a required action $D$, define $\mathcal B_D=\{h:D(h)=1\}$ and let $\mathcal Q=\{h:Q(h)=1\}$. Suppose the evaluator forbids $D$. Then
+\begin{equation}
+\mathcal B_D\cap\mathcal Q=\varnothing.
+\end{equation}
+A release rule preserving an incumbent's evaluator pass on this task therefore excludes every candidate trajectory in $\mathcal B_D$. The exclusion follows from the acceptance predicate even when a model can produce the correct action. It also holds independently of the price of validating the candidate. Removing the conflicting predicate changes the admissible set. Removing the preservation rule changes the consequence of a score loss. These are the assumptions needed for the release part of the main proposition.
+
+The HR source provides the measured eligibility restriction and a concrete action conflict. Its source execution identifier begins \texttt{a185cf49b2d1}. The latest eligibility rule requires a sabbatical deferral in Airtable and no course assignment. All nine original assertions pass after the omission. Assertion 5 is \texttt{airtable\_action\_not\_exists}, targeting \texttt{create\_record} with the employee identifier \texttt{EMP-3003}. The four ancestor retests again pass all assertions and omit the deferral. The source restriction is measured in the follow-up; the release consequence applies analytically when that task is protected in a release panel.
+
+The sales source connects the opposite score disagreement to a semantic edit. The first execution identifier begins \texttt{03d656cb41ec}. It posts the latest Director's \texttt{MAJOR WIN} prefix. The F1R0 rationale cites assertions demanding \texttt{CLOSED} and banning the two win prefixes, then calls the Director instruction an unadopted suggestion. The changed \texttt{ace\_op\_contract\_win} unit elevates the older observed pattern. F0R0 also adds \texttt{ace\_win\_prefix\_guard}, a deterministic prefix normalization component. The resulting source retests are identified in Table~\ref{tab:sales-chain}.
 
 \begin{table*}[t]
 \centering
-\caption{Complete task-level comparisons of GNOSIS against each frozen condition. Strict differences and their intervals are in percentage points. Partial-credit differences use the original $[0,1]$ scale. For all-five success, the effect column gives discordant wins/losses.}
-\label{tab:complete-statistics}
+\caption{Recorded sales feedback sequence under the latest Director authorization. Identity prefixes have 12 hexadecimal characters. The ancestor first run and the unchanged F1R1 retest satisfy the business instruction. Every legal edited retest satisfies the strict assertions and violates that instruction.}
+\label{tab:sales-chain}
 \small
-\begin{tabular}{@{}llrlrr@{}}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lllrcc@{}}
 \toprule
-Endpoint & Comparator & \shortstack{Difference or\\wins/losses} & \shortstack{95\% paired\\bootstrap interval} & Exact $p$ & Holm $p$ \\
+Stage & Condition & Execution identity & Version identity & Strict & Business\\
 \midrule
-Strict success & Fixed & $+3.3333$ & $[-4.0000,10.0000]$ & 0.472656 & 0.656250 \\
- & ACE & $+8.0000$ & $[-2.6667,19.3333]$ & 0.218750 & 0.656250 \\
- & Global & $+5.3333$ & $[-2.0000,12.6667]$ & 0.242188 & 0.656250 \\
-\addlinespace
-Partial credit & Fixed & $+0.047386$ & $[0.012508,0.085662]$ & 0.016914 & 0.050743 \\
- & ACE & $+0.055867$ & $[0.001575,0.108880]$ & 0.052208 & 0.104416 \\
- & Global & $-0.000534$ & $[-0.034793,0.028595]$ & 0.976685 & 0.976685 \\
-\addlinespace
-All-five success & Fixed & $8/1$ & --- & 0.039063 & 0.117188 \\
- & ACE & $7/1$ & --- & 0.070313 & 0.125000 \\
- & Global & $5/0$ & --- & 0.062500 & 0.125000 \\
+Source & Ancestor & \texttt{03d656cb41ec} & \texttt{0faf0fdd660e} & 0 & 1\\
+Retest & F0R0 & \texttt{8731d97010db} & \texttt{17910b862f17} & 1 & 0\\
+Retest & F1R0 & \texttt{6a0d95e8c081} & \texttt{bd75151f3fcb} & 1 & 0\\
+Retest & F0R1 & \texttt{c95aa282b056} & \texttt{2b343c6f4097} & 1 & 0\\
+Retest & F1R1, generation failed & \texttt{299d71bb8ce9} & \texttt{0faf0fdd660e} & 0 & 1\\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table*}
 
-\section{Components and selection}\label{app:components}
+The main reading prioritizes the Director's latest deal-specific instruction. The alternate VP authority makes the edited announcement correct. Both evaluations preserve the rationale and actual content transformation. In the follow-up, source retests occur after all candidates are frozen and never decide deployment. The observed change in construction is at source eligibility and inside the editor's use of feedback. The historical release rule supplies the separate promotion consequence analyzed above.
 
-Every delivered unit has \texttt{GLOBAL} scope. The final GNOSIS version contains 13 text units and one executable E component, \texttt{ace\_op\_vp\_guard}, which processes job-title information at the task API boundary. Across development, the candidate history contains ten distinct executable source contents, including revisions of the same component. The host compiles the TypeScript source and registers it through Cordis; execution occurs in QuickJS with access to the task's original capabilities. During the 150 final GNOSIS executions, the executable component is invoked 6,276 times: 150 at task start and 6,126 before a tool call. These invocations produce zero nonempty effects and zero capability calls. The 13 text units are injected 1,950 times. Thus the executable component contributes no observed runtime intervention to the final evaluation.
+The saturation argument concerns a fixed selection panel. Let $\mathbf q(v)$ contain every bounded score used by a strict improvement predicate, and let $\mathbf q_{\max}$ be its attainable coordinatewise maximum. If the retained reference has $\mathbf q(v)=\mathbf q_{\max}$, a candidate cannot increase a coordinate. A rule requiring an increase therefore abstains. The GNOSIS and global validation references both reach maximal strict and verifier scores on six tasks with two runs per task. They retain USD~4.189448 and USD~5.471169 of their USD~8.5 allowances. The corresponding GNOSIS held-out evaluation has 101 successes in 150 executions. The selection ceiling is a property of the panel and rule while failures remain in held-out execution.
 
-Both repair conditions conduct four mature comparisons, each planning 12 candidate executions on the six selection tasks. All 48 GNOSIS plans start at the task beginning because the changed version includes globally active units. No historical execution is reused. The same counts hold for the global validation condition. Table~\ref{tab:selection-evolution} gives the release progression and the actual settled resource use. Selection means describe the accepted release sequence; the final comparison in each condition has candidate and incumbent means both equal to 1.0, producing abstention under the strict-improvement rule.
+\section{Block outcomes and inference}
 
-In chronological order, the four GNOSIS comparisons have incumbent/candidate success counts of $10/9$, $10/11$, $11/12$, and $12/12$, each out of 12 executions per side. The middle two candidates are accepted. Global has counts of $10/9$, $10/10$, $10/12$, and $12/12$; only the third candidate is accepted. Equal aggregate counts in Global's second comparison conceal a task-level regression, which prevents release under the zero-regression condition. Both conditions therefore finish at the maximum observed selection score.
+Table~\ref{tab:blocks} reports complete business counts. Every entry represents 12 executions. The primary sign test uses six source blocks, with repetitions averaged inside each block.
+
+\begin{table*}[t]
+\centering
+\caption{Confirmed business successes by source block and deployed condition. Each cell has denominator 12. The difference column is F1R0 minus F0R0 in counts. T indicates that strict source failure triggered editing.}
+\label{tab:blocks}
+\small
+\renewcommand{\arraystretch}{1.16}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lcrrrrrrr@{}}
+\toprule
+& & \multicolumn{4}{c}{Editing workflow} & \multicolumn{2}{c}{Ancestor conditions} & \\
+\cmidrule(lr){3-6}\cmidrule(lr){7-8}
+Source & T & F0R0 & F1R0 & F0R1 & F1R1 & Fresh & Carry & Difference\\
+\midrule
+Finance & Yes & 6 & 7 & 7 & 6 & 6 & 8 & $+1$\\
+HR & No & 5 & 2 & 5 & 0 & 3 & 4 & $-3$\\
+Marketing & No & 6 & 6 & 6 & 6 & 5 & 6 & $0$\\
+Operations & No & 10 & 11 & 11 & 11 & 10 & 11 & $+1$\\
+Sales & Yes & 9 & 10 & 10 & 9 & 11 & 12 & $+1$\\
+Support & Yes & 5 & 4 & 4 & 4 & 6 & 8 & $-1$\\
+\midrule
+Total & & 41 & 40 & 43 & 36 & 41 & 49 & $-1$\\
+\bottomrule
+\end{tabular*}
+\end{table*}
+
+For a hypothesized common shift $\delta$, define
+\begin{equation}
+p(\delta)=\frac{1}{64}\sum_{s\in\{-1,1\}^{6}}
+\mathbf 1\!\left\{
+\left|\frac{1}{6}\sum_b s_b(d_b-\delta)\right|
+\geq |\widehat\Delta-\delta|
+\right\}.
+\end{equation}
+The test uses $p(0)$. The inversion evaluates $\delta$ from $-1$ to 1 in steps of 0.0001 and retains values with $p(\delta)\geq0.05$. In the reported comparisons, accepted sets form a single interval. Endpoints retain the grid resolution; 8.33 and 16.66 percentage points are the displayed grid endpoints. The source block differences share a common shift and exchangeable signs for this calculation. The method enumerates sign assignments and uses the six actual blocks without treating repetitions as additional blocks.
+
+For the frozen evaluation, the R1 simple increment F0R1 minus F0R0 is $-6.94$ percentage points, $p=0.5$, interval $[-25.00,0.00]$. The factorial interaction is $+1.39$ points, $p=1.0$, interval $[-8.33,8.33]$. Holm correction across these two secondary tests yields 1.0 for both. None of the three triggered blocks produces four legal candidates. Accordingly, these contrasts retain all deployed ancestors and charge every format failure.
+
+\section{Business authorization and unknown outcomes}
+
+The complete review uses one obligation definition for every execution of a task. Obligations cover required writes and communications, explicit exclusions, and the correct values and recipients. The final object states and recorded actions support each judgment. A known failed obligation fixes the task label as failure; an unresolved obligation keeps a remaining task unknown. Confirmed successes use the full scheduled denominator.
+
+Three binary authorization choices yield eight recomputations. The sales alternatives prioritize the latest Director instruction or the older VP instruction. The quotation alternatives prioritize the current task's discount and fee instruction or the policy for an already accepted quotation. The support alternatives treat recalled items as subject to, or exempt from, the processing log. Table~\ref{tab:sensitivity} gives the primary contrast and the unknown outcome extremes. Authorization changes that leave the contrast unchanged still retain their alternative task labels in the evidence.
+
+\begin{table*}[t]
+\centering
+\caption{Sensitivity of F1R0 minus F0R0. All effects and intervals are in percentage points. Unknown outcome assignments bound the observed contrast; each assignment also has its own sign test inversion.}
+\label{tab:sensitivity}
+\small
+\renewcommand{\arraystretch}{1.16}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrr@{}}
+\toprule
+Interpretation or assignment & Difference & Two sided $p$ & 95\% interval\\
+\midrule
+Main business authorization & $-1.39$ & 1.000 & $[-25.00,8.33]$\\
+Accepted quotation policy & $0.00$ & 1.000 & $[-25.00,16.66]$\\
+Unknown outcomes minimize the difference & $-6.94$ & 0.813 & $[-50.00,8.33]$\\
+Unknown outcomes maximize the difference & $+4.17$ & 0.531 & $[-8.33,16.66]$\\
+\bottomrule
+\end{tabular*}
+\end{table*}
+
+The HR obligation requires an Airtable deferral for the employee on sabbatical and leaves courses unassigned. Strict assertion 5 forbids creating a record for \texttt{EMP-3003}, conflicting with this deferral. Assertion 8 concerns automatic completion of prerequisites and is judged against its own authorization. The first source run and all four ancestor retests omit the deferral.
+
+For Xero credit allocation, the implemented API decreases credit note availability but leaves invoice outstanding balances unchanged. The review records allocation correctness separately from four balance changes absent from the environment implementation. In quotation task \texttt{QU104}, the current instruction yields 8,505; the accepted quotation alternative yields 7,875. Zendesk merging includes ticket transfer. Gorgias defect reporting and processing logs are separate obligations. The news task has eight valid articles and 11 logging entries. The hazardous shipping task requires alerts for sanctioned entities, with alerts judged separately from declarations.
+
+All 44 disagreements between strict scoring and frozen judgments receive an evidence reading. Thirty-one support the frozen decision: 22 Xero payment object cases, three employee alias cases, and six date cases. Thirteen support the original strict decision because formatted numeric sponsor amounts satisfy the obligations. Complete review treats equal numeric amounts as equal while retaining approver identity and the 59,000 aggregate requirement.
+
+The 21 unknown executions strictly pass. Missing evidence concerns policy, Drive document bodies, and employee classifications. Executable obligation success removes only the operations absent from the environment, leaving their business status recorded separately. The complete business primary difference and executable obligation difference are both $-1.39$ points. Their 95\% intervals are $[-25.00,8.33]$ and $[-33.33,8.33]$ points, respectively.
+
+\section{Requirement paths and component expression}
+
+The 263 exposures include 134 exact assertion mappings, 34 partial mappings, 63 task summaries, and 32 process or compound requirements. The detailed assertion selection comparison uses 187 exposed items and the task summary comparison uses 70; these classifications answer a separate question from exact assertion identity. The nested path follows selected exposures, whereas the total of 179 fully written exposures also includes 20 outside the rationale selection path.
+
+The five nested sets contain 263 exposed requirements, 167 selected in rationales, 159 fully incorporated within those selections, 72 with readable successor outcomes, and 63 completed at least once. The ratio $63/263$ uses exposure events as its denominator and measures completion observed along this recorded path. Repeated exposures retain the same obligation identity. Among all exposures, 173 have no execution of their corresponding candidate. Those records retain an unobserved successor outcome. Transfer uses the separately frozen new tasks; retention starts from a verified completion and counts later applicable opportunities.
+
+Across same candidate successors, 117 observations contain 92 passes, 12 failures, 12 summaries without an identifiable requirement, and one unloaded component. Repeated requirements and shared executions keep their identities in the database. The 63 completed exposures in the selected nested path have no observed failure in their applicable opportunities. Later version retention uses its separate sequence population: 111 retained, 19 later failed, 60 without follow-up, and six without a verified initial success.
+
+The 27 historical executable units generate 196 effects in 63 distinct executions, or 65 distinct pairs of unit and execution. Component tool calls total 27. When effects coexist, their common execution and version identity is retained. Thirteen effect-bearing executions fall within the 30 tasks covered by complete business review; six succeed and seven fail. The other 50 retain official scoring.
 
 \begin{table}[t]
 \centering
-\caption{Selection outcomes under the shared USD 8.5 learning allowance. Expenditure includes learning and selection.}
-\label{tab:selection-evolution}
-\footnotesize
-\begin{tabularx}{\columnwidth}{@{}lXX@{}}
+\caption{Observed expression of the inherited VP guard. Execution counts in the two batches are disjoint. Effects and component tool calls are zero throughout.}
+\label{tab:guard}
+\small
+\renewcommand{\arraystretch}{1.13}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lrrr@{}}
 \toprule
-Quantity & Global & GNOSIS \\
+Batch & Executions & Invocations & Effects\\
 \midrule
-Settled expenditure (USD) & 3.028831 & 4.310552 \\
-Accepted releases & 1 & 2 \\
-Mature comparisons & 4 & 4 \\
-New candidate executions & 48 & 48 \\
-Reused executions & 0 & 0 \\
-Accepted selection means & $0.8333\to1.0$ & $0.8333\to0.9167\to1.0$ \\
-Releases per USD & 0.330160 & 0.463978 \\
-Unspent allowance (USD) & 5.471169 & 4.189448 \\
+Historical & 259 & 9,897 & 0\\
+Controlled & 462 & 17,603 & 0\\
+\midrule
+Total & 721 & 27,500 & 0\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+The 27,500 guard calls include 720 task start events. There are 26,745 URLs outside the target branch and 35 inside it. The target cases separate into 23 without a usable prefix, ten with an already correct prefix, and two invalid JSON bodies. The original source uses \texttt{String(ctx.task)} on the host's object. Replaying 45 saved contexts yields zero changes and zero component calls; all ten replayed task starts produce \texttt{[object Object]}.
+
+\section{Historical selection and information flow}
+\label{sec:history-controls}
+
+The original frozen comparison uses the same 30 held-out tasks with five independent executions per agent. GNOSIS strictly succeeds in $101/150$, the fixed agent in $96/150$, and the global validation agent in $93/150$. The GNOSIS comparisons against the three frozen comparators have Holm adjusted $p=0.656250$. Frozen execution expenditure is CNY~14.194113 for GNOSIS and CNY~28.279199 for the fixed agent, a 49.81\% reduction. Their complete stage expenditures are CNY~48.128490 and CNY~34.338908. The efficiency result therefore concerns the acquired version's execution, while the complete cost includes acquisition and validation.
+
+Both repair conditions use the same six-task selection panel with two repetitions. The recorded release progression and remaining allowance are shown in Table~\ref{tab:release}. In the final comparison, strict success and the verifier score are maximal on both sides. The deterministic improvement rule abstains. The corresponding held-out failures establish that the selection ceiling occurs before the agent completes every evaluated task.
+
+\begin{table}[t]
+\centering
+\caption{Selection capacity and remaining allowance in the historical release experiment. Learning and selection expenditure is settled reference USD. Each condition has a USD~8.5 allowance.}
+\label{tab:release}
+\small
+\renewcommand{\arraystretch}{1.14}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lrr@{}}
+\toprule
+Quantity & Global & GNOSIS\\
+\midrule
+Settled learning and selection & 3.028831 & 4.310552\\
+Accepted releases & 1 & 2\\
+Mature comparisons & 4 & 4\\
+New candidate validation runs & 48 & 48\\
+Reused validation runs & 0 & 0\\
+Final selection successes & $12/12$ & $12/12$\\
+Remaining allowance & 5.471169 & 4.189448\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+\begin{table*}[!t]
+\centering
+\caption{Fixed repair timing intervention. Every treatment cell has six executions: three tasks with two repetitions. G is global early, L local early, D local delayed, C contract early with body delayed, and N removed guidance. Scores follow the timing study's frozen evaluation.}
+\label{tab:timing}
+\small
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}llrrrrr@{}}
+\toprule
+Source & Category & G & L & D & C & N\\
+\midrule
+\path{sales.negative_selection} & Planning & 1 & 2 & 2 & 0 & 1\\
+\path{operations.fire_suppression_testing} & Planning & 1 & 0 & 0 & 0 & 1\\
+\path{marketing.link_building} & Planning & 2 & 2 & 2 & 2 & 2\\
+\path{finance.refund_processing} & Planning & 3 & 3 & 5 & 2 & 3\\
+\addlinespace
+\path{support.hiver_team_performance} & Execution & 4 & 4 & 5 & 4 & 4\\
+\path{finance.xero_bank_reconcile} & Execution & 4 & 4 & 3 & 3 & 4\\
+\path{marketing.win_loss_analysis} & Execution & 4 & 5 & 6 & 6 & 6\\
+\path{hr.candidate_research_dossier} & Execution & 4 & 4 & 4 & 4 & 4\\
+\midrule
+Total, out of 48 & & 23 & 24 & 27 & 21 & 25\\
+\bottomrule
+\end{tabular*}
+\end{table*}
+
+For locality, the relevant dependency is every path by which changed content reaches an execution. Before the first eligible event, a local unit is absent from the model prompt and tool catalog and its plugin is unloaded. Under identical initial state and transition laws, coupling model and environment randomness gives identical trajectories until that event. An added unit, deletion, or changed condition enters the change set through both old and new activation descriptions. The union over these descriptions gives the full affected set. A global text change exposes its content from task start and puts every panel execution in that union.
+
+The three mature source repairs learned from empty collections each declare global content and require all 36 audit executions. A subsequent interface comparison offers six sources two proposal opportunities in each of two conditions. Nineteen proposals yield legal candidates, all retaining global content; eight are mature, split four per interface condition, and all require 12 audit executions. Both interfaces yield zero mature local candidates. The interface study's financial reconciliation remains incomplete; its structural deployment counts and zero execution reuse are available directly from recorded versions and audit plans.
+
+The timing intervention freezes eight source repairs, each with three tasks and two repetitions under five treatments. G supplies the complete body globally before execution. L supplies it early to tasks selected by a fixed route. D uses the same route and body at a delayed runtime event. C supplies a fixed contract early and the remaining body later. N removes the repair. Categories are fixed before results: four planning sources and four execution-detail sources. Table~\ref{tab:timing} gives success counts. The complete 240-run eligibility audit retains every scheduled execution.
+
+The primary planning versus execution-detail interaction for L minus D is $-4.17$ percentage points, $p=1.0$, with 95\% interval $[-25.00,12.50]$ under 70 source-category permutations. L minus G is $+2.08$ points, interval $[-4.17,8.33]$. It meets the prespecified ten point noninferiority margin and precision criterion. The C minus G interval is $[-14.58,8.33]$, with precision insufficient under the frozen criterion. Seven of eight sources have equal G and N means in the saved analysis. The eight source pools all have 100\% host dependency coverage, so additional routing and prediction yield no saved validation execution. The recorded deployment saving ranges from CNY~$-0.19$ to $-0.36$ per source.
+
+The 377 historical parent and candidate comparisons match lineage, task, and version identities and aggregate the executions observed on each side. They are descriptive comparisons with shared executions. In 217 comparisons failed calls decrease; 58 also improve strict success and 159 do not. There are 234 comparisons with lower cost and no strict score loss. Separately, 196 failed executions with at least one action and zero failed tool calls form 189 annotated requirement groups. Their annotations include 99 groups missing a necessary action and 39 containing a prohibited action; categories overlap and the sample is selected for failure. The dedicated 18-task frozen comparison supplies the same-task operational contrast reported in the main paper.
+
+\begin{table*}[!t]
+\centering
+\caption{Evidence paths within the offline analysis artifact. Original execution and candidate identities remain linked through the database and JSON pointers.}
+\label{tab:evidence}
+\small
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\textwidth}{@{}lL@{}}
+\toprule
+Claim or object & Artifact paths\\
+\midrule
+Execution population and inputs & \path{completion/database_counts.json}; \path{completion/historical_input_conditions.json}\\
+Actual intervention & \path{history/candidate_status.json}; \path{history/edit_content_diffs.jsonl}\\
+Selection and runtime dependencies & \path{history/summary.json}; \path{history/timing.json}\\
+Business requirements and outcomes & \path{business/task_requirements.json}; \path{business/execution_reviews.json}\\
+Scoring and authorization sensitivity & \path{completion/scoring_sensitivity.json}; \path{completion/authorization_sensitivity.json}; \path{completion/unknown_obligation_bounds.json}\\
+Requirement path and observations & \path{completion/requirement_flow.json}; \path{requirements/events.json}; \path{requirements/action_context.json}\\
+Retention and unit inheritance & \path{requirements/retention.json}; \path{requirements/unit_relationships.json}\\
+Component expression & \path{completion/historical_component_business.json}; \path{completion/guard_protocol_replay.json}; \path{requirements/vp_guard_inputs.json}\\
+Source, transfer, and carry & \path{transfer.json}; \path{completion/transfer_applicability.json}; \path{completion/carry_evidence.json}\\
+Official action replay & \path{replay/runtime_source.json}; \path{replay/investigation.json}; \path{replay/records/}\\
+Review provenance & \path{independent_review/read_order.jsonl}; \path{business/human_review.json}; \path{completion/frozen_disagreement_review.json}\\
+Ledger reconciliation & \path{costs.json}; \path{transfer.json}\\
 \bottomrule
 \end{tabularx}
+\end{table*}
+
+\section{Carried evidence and full expenditure}
+
+For each transfer task, ancestor repetitions $a_1,a_2,a_3$ serve as the first executions. Carry run $c_r$ receives $a_r$ and restarts the original world. Fresh retry uses $a_2,a_3,a_1$ for first executions $a_1,a_2,a_3$, respectively. The 72 pair descriptions therefore contain 72 unique ancestor runs and 72 unique carry runs. Each ancestor contributes to two pair descriptions in different roles. These relationships remain intact when aggregating within tasks and source blocks.
+
+The carry input contains task information, prior assistant actions and tool responses, and original assertion outcomes and parameters. All 72 inputs match the preceding recorded assertions. Initial state identities match in every pair across all 24 tasks. Carry carries task evidence into a fresh world; previous application writes are absent from that initial world.
+
+Of 17 frozen failures in the first execution, carry recovers 17 and fresh retry recovers eight. Of 55 first passes, carry obtains 55 and fresh retry 47. Complete business review gives 12 versus nine successes in the former group and 37 versus 32 in the latter. Carry thus adds three and five confirmed successes across these two groups. The complete cost comparison always includes the first run. Cost per extra confirmed success is CNY~0.070589 after a first frozen failure and CNY~0.080830 after a first frozen pass.
+
+\begin{table}[t]
+\centering
+\caption{Controlled study ledger, in CNY. The unsettled reservation is reported outside the settled total. External frozen evaluation fees were unrecorded.}
+\label{tab:ledger}
+\small
+\renewcommand{\arraystretch}{1.13}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lr@{}}
+\toprule
+Item & Amount\\
+\midrule
+Task execution, settled & 43.282601\\
+Editing, including failed attempts & 2.949000\\
+Feedback organization & 0.495628\\
+\midrule
+Settled total & 46.727228\\
+\addlinespace
+Unsettled reservation & 1.640180\\
+\bottomrule
+\end{tabular*}
 \end{table}
 
-The intermediate evaluation compares an early version with the working candidate on the six marked development tasks. Strict success increases from four to five tasks, and mean partial credit increases from 0.934524 to 0.958333. The learning-path assignment and prepaid-amortization tasks change from failure to success. The customer-milestone task changes from success to failure, with partial credit 0.75. The remaining three tasks remain successful. These transitions characterize the intermediate working candidate, whose fingerprint differs from the final released version.
+Reference prices per million tokens are CNY~1 for uncached input, CNY~0.02 for cached input, and CNY~4 for output. The experimental conversion uses CNY~7.1 per USD. The controlled study's settled reference and billed amounts agree. Its task execution ledger contains 5,643 settled calls and one unsettled reservation. Four organization calls and 18 editing calls are settled. Execution files contain CNY~43.187776; the remaining CNY~0.094825 belongs to 14 paid calls made before recovery. The sum is reconciled at call identity level.
 
-\section{Cost accounting}\label{app:cost}
+Historical execution records sum to CNY~298.342964 at reference prices and CNY~308.583831 billed. Proposal records sum to CNY~47.939459 at reference prices and CNY~60.349443 billed. The overlapping record views remain separate cost summaries. The historical P2 batch uses 18 tasks and two runs each: Fixed and GNOSIS strictly succeed in $20/36$, Global in $25/36$. Their mean failed tool calls per run are 18.08, 3.11, and 4.58, respectively. These outcomes separate execution efficiency from complete task success.
 
-Resource comparisons use settled token charges at fixed reference rates: CNY 1 per million uncached input tokens, CNY 0.02 per million cached input tokens, and CNY 4 per million output tokens. USD learning allowances are converted at CNY 7.1 per USD. Table~\ref{tab:stage-costs} separates experience formation from final execution. Selection charges are included in the learning-and-selection column and are also shown separately to expose that component of the total. Intermediate evaluation and fixed-candidate retesting are distinct stages.
+\section{Evidence locations and review provenance}
 
-\begin{table*}[t]
-\centering
-\caption{Settled reference expenditure by condition and stage, in CNY. The selection column is a subset of learning and selection and is not added again in the total.}
-\label{tab:stage-costs}
-\small
-\begin{tabular}{@{}lrrrrrr@{}}
-\toprule
-Condition & \shortstack{Learning and\\selection} & \shortstack{Selection\\subset} & Intermediate & \shortstack{Final\\execution} & \shortstack{Fixed-candidate\\retest} & All stages \\
-\midrule
-Fixed & 6.059709 & 0 & 0 & 28.279199 & 0 & 34.338908 \\
-ACE & 10.170880 & 0 & 0 & 24.111810 & 0 & 34.282690 \\
-Global & 21.504698 & 7.001778 & 0 & 17.350725 & 2.400554 & 41.255977 \\
-GNOSIS & 30.604922 & 5.410830 & 1.472953 & 14.194113 & 1.856502 & 48.128490 \\
-Repeat & 0 & 0 & 0 & 45.831735 & 0 & 45.831735 \\
-\bottomrule
-\end{tabular}
-\end{table*}
+All paths in Table~\ref{tab:evidence} are relative to the research artifact root. The unified relational database is \path{research.sqlite}; \path{summary.json} is the analysis entry. The table maps the main claims to saved evidence available in the research workspace. Public archival deposition is pending.
 
-GNOSIS development plus final evaluation costs CNY 46.271988, including intermediate evaluation and excluding the separate fixed-candidate retest. Dividing by 30 assigns CNY 1.542400 to each repeated-attempt task. The repeated-attempt condition spends CNY 45.831735 in total, or CNY 1.527725 per task, leaving 0.951445\% of its allocation unused. The measured amortization curve has no crossing over the 1--30 task range. Mean frozen execution charges are CNY 0.188528 for Fixed, 0.160745 for ACE, 0.115672 for Global, and 0.094627 for GNOSIS.
+The first frozen review concealed arm, version, artifact contents, and arm paths. Its verdicts followed the original assertion inventory. The subsequent business review added the task obligations described above as a post hoc analysis. The independent Codex review established 30 task obligation definitions, checked 3,331 added obligation instances, and read 54 executions needing semantic interpretation. Eighteen requirement disagreements concern the same quotation authority choice and affect one execution label. Review logs record reading order and early exposure. The researcher reviewed the final offline findings. Records omit the original external frozen review's provider, served model, and fee.
 
-Official account exports give the cash expenditure in Table~\ref{tab:official-costs}. Dates use UTC+08:00; the October 8 amount is the snapshot available at export. The sum is CNY 206.71348282 across 18,467 requests. Cached input accounts for 91.43\% of the 828,635,115 input tokens. Input cache misses cost CNY 71.026074, cache hits cost CNY 15.15218082, and output costs CNY 120.535228.
+\balance
+The 2,006 eligible historical executions each recover their saved input and task initial state and match the complete contract against the official 600-task inventory. Records excluded by the 7 October cutoff remain excluded from performance, learning, and statistical comparisons. Their task exposure is still checked when selecting clean transfer tasks. Replay of all 462 controlled runs and 63 historical effect-bearing runs agrees on the original assertions and success labels. Entity identifier correspondence, date differences, and residual state differences are documented separately.
 
-\begin{table*}[t]
-\centering
-\caption{Official account usage and actual charges by date (UTC+08:00). Token counts and costs retain the precision of the exported totals.}
-\label{tab:official-costs}
-\small
-\begin{tabular}{@{}lrrrrr@{}}
-\toprule
-Date & Requests & Uncached input tokens & Cached input tokens & Output tokens & Charge (CNY) \\
-\midrule
-2026-10-07 & 4,182 & 31,201,724 & 192,144,768 & 8,017,475 & 67.11451936 \\
-2026-10-08 & 14,285 & 39,824,350 & 565,464,273 & 22,116,332 & 139.59896346 \\
-\midrule
-Total & 18,467 & 71,026,074 & 757,609,041 & 30,133,807 & 206.71348282 \\
-\bottomrule
-\end{tabular}
-\end{table*}
+The offline reconstruction is regenerated from the project root using
+\begin{quote}
+\small\ttfamily
+.venv/Scripts/python.exe -m\\
+engine.negative\_result\_offline --all
+\end{quote}
+The pipeline checks the saved official replay, then calculates business outcomes, historical relations, sensitivity results, and tables. Its recorded model call count is zero. Model calls used for the earlier controlled experiment remain in that experiment's ledger.
 
-The local ledger contains 18,133 call records, of which 18,127 have settled charges totaling CNY 203.837800. Six unsettled reservations sum to CNY 9.727237: CNY 3.286512 for ACE and CNY 6.440725 for Global. Reservations are excluded from every settled total in Table~\ref{tab:stage-costs}. The official exports exceed the local settled reference total by CNY 2.875683 and contain 334 more requests. They provide daily aggregates without request identifiers or experimental-condition fields, so this difference remains at the account level. Condition-level comparisons use the local phase assignments. The local time-of-day estimate of CNY 226.488652 is separate from the official cash total; the daily exported usage reproduces the official charges directly at the stated token prices.
+\section{Authoring and study boundaries}
+
+AI assistance was used for literature retrieval, manuscript drafting, and LaTeX preparation. Codex assistance in business review is described above. The experiments operate within AutomationBench's task environments, retain their original permissions, and record action outcomes for review. The study uses one base model and one inherited ancestor; six domains characterize variation within this setup.

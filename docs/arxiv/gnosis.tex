@@ -2,375 +2,329 @@
 \pdfminorversion=7
 \documentclass{ecai}
 \usepackage[T1]{fontenc}
-\usepackage{graphicx}
 \usepackage{amsmath,amssymb}
-\usepackage{booktabs,tabularx}
-\usepackage{microtype}
+\usepackage{booktabs,tabularx,array}
+\usepackage{microtype,balance}
+\usepackage{graphicx}
 \usepackage[hidelinks,bookmarks=false]{hyperref}
 \ecaisubmission
-\hypersetup{pdftitle={GNOSIS: Continual Agent Repair with Activation Boundaries},pdfauthor={Zonghe Wu}}
+\hypersetup{pdftitle={When Evaluation Prevents Learning: Functional Accumulation in Self-Evolving Agents},pdfauthor={Zonghe Wu}}
 \newcommand{\Gnosis}{GNOSIS}
-\newcommand{\Global}{\texttt{GLOBAL}}
-\newcommand{\E}{\mathbb{E}}
-\newcommand{\Prob}{\mathbb{P}}
-\newcommand{\ind}{\mathbf{1}}
+\newcommand{\pp}{\,\mathrm{pp}}
+\newcolumntype{L}{>{\raggedright\arraybackslash}X}
 \newtheorem{proposition}{Proposition}
+\AddToHook{env/thebibliography/begin}{\interlinepenalty=10000}
 
 \begin{document}
 \begin{frontmatter}
-\title{GNOSIS: Continual Agent Repair with Activation Boundaries}
-\author[A,B]{\fnms{Zonghe}~\snm{Wu}\thanks{Corresponding author. Phone: 13646028118. Email: \nolinkurl{zonghe.wu@ucdconnect.ie}.}}
+\title{When Evaluation Prevents Learning:\\
+Functional Accumulation in Self-Evolving Agents}
+\author[A,B]{\fnms{Zonghe}~\snm{Wu}\thanks{Phone: 13646028118; e-mail: \nolinkurl{zonghe.wu@ucdconnect.ie}.}}
 \address[A]{School of Architecture, Planning and Environmental Policy, University College Dublin, Belfield, Dublin 4, Ireland}
 \address[B]{Chang'an-Dublin International College of Transportation, Chang'an University, Xi'an 710018, China}
 \begin{abstract}
-Persistent agent repair changes both future task behavior and the evidence needed to validate later updates. We introduce GNOSIS, a system that separates working and released versions and defines execution dependencies through activation boundaries: the first runtime event at which an edited component can influence an agent. Under pre-activation invisibility, coupled executions coincide until that event, making untouched historical trajectories reusable. The affected set of a release is the union of its component dependencies. On AutomationBench, four frozen agents are evaluated on 30 held-out tasks with five independent executions per task. GNOSIS achieves 67.33\% strict success, exceeding the fixed agent by 3.33 percentage points, and reduces frozen execution cost by 49.81\%. The task-paired comparison has a Holm-adjusted $p$-value of 0.656250. All delivered units have global scope, and all 48 validation plans require fresh executions; evidence reuse therefore saves zero executions. GNOSIS accepts two updates before selection scores saturate, while its development-inclusive cost remains above sequential revision across the observed 30 tasks. These results identify release locality and selection-feedback capacity as the structural conditions that govern the value of continual repair.
+In self-evolving AI agents, automated evaluators such as test assertions control what the agent learns. Across 2,468 executions, we show that flawed evaluators prevent the agent from correcting its own errors. An agent that omitted a required HR deferral passed all nine assertions and received no editing opportunity. In a sales task, outdated assertions pushed the agent to adopt an older announcement format that violates the latest business instruction. We prove that when assertions conflict with business requirements, the learning rule excludes the correct fix from all candidates. Beyond evaluation, we trace runtime breaks: an inherited component logged 27,500 invocations with zero effects, and a context-reorganization treatment failed to improve cross-task transfer. Feeding the agent direct traces from prior attempts, however, raised same-task success from 41/72 to 49/72. Misaligned evaluators miss the agent's errors and write their own into persistent memory.
 \end{abstract}
 \end{frontmatter}
+\raggedbottom
 
 \section{Introduction}
-\label{sec:intro}
 
-An agent that improves through experience acquires obligations along with capabilities. A lesson learned while repairing a spreadsheet workflow can change how the agent interprets a later customer record. A new procedure for verifying a write can add calls to every future task. Each persistent update consequently changes the relationship between the deployed agent and the executions previously used to evaluate it. Continued improvement requires a way to determine which historical results remain applicable after an update.
+An employee on sabbatical requires a deferral record and must remain unassigned to courses. An automation agent omits the record, passes every assertion, and receives no opportunity to repair the omission. In a sales task, the agent follows the latest announcement instruction and fails its assertions. The editor adopts the older format rewarded by those assertions. Every legal edited candidate then passes the evaluator and violates the latest instruction. Evaluation determines which business failure becomes a learning object and supplies the interpretation written into experience.
 
-This problem becomes concrete in enterprise automation. Tasks combine application programming interfaces (APIs) with business requirements whose satisfaction depends on the final state of several applications. AutomationBench evaluates such workflows through assertions over environment state~\cite{automationbench}. Operational experience can improve the discovery and use of these interfaces without changing model weights. StarHarness studies this form of adaptation by evolving the surrounding execution system~\cite{starharness}. Once updates accumulate, however, repeatedly evaluating every task consumes resources that could otherwise support additional repairs. The missing operational quantity is the dependency between a particular change and a particular execution.
+Persistent agents learn through artifacts that outlive an execution. Reflections preserve lessons from failure~\cite{reflexion}; Agentic Context Engineering (ACE) curates playbooks~\cite{ace}; executable skills make experience callable~\cite{voyager}. Recent studies follow acquisition and retention across artifact revisions~\cite{singh2026agentplasticity,lin2026beyondendpoint}. This raises a question from biological evolvability: how does inherited structure produce functional variation that selection can retain? Kirschner and Gerhart place the generation of heritable, selectable variation at the center of evolvability~\cite{kirschner1998evolvability}. For an agent, the evidence is a changed artifact that produces valid business behavior on later applicable opportunities.
 
-A component's first opportunity to affect the agent gives that dependency a precise location. Consider a procedure that intervenes immediately before a specific endpoint is called. If the procedure is absent from the prompt and tool catalog before a matching call, all earlier decisions can remain identical across the old and new versions. An execution that never reaches the intervention point is outside the change's influence. This observation motivates the \emph{activation boundary}: the first registered runtime event matching any component in the change set. The boundary includes opportunities to alter tool arguments or observations, as well as context and workflow control.
+We study this construction process in \Gnosis{}, a system for persistent repair around a fixed language model. A business obligation identifies the required action and affected object under the task's authority. We follow it from feedback through the editor's rationale and changed artifact to subsequent execution. Later applicable uses establish retention; new tasks test transfer. Figure~\ref{fig:framework} shows how evaluation acts along this path.
 
-\Gnosis{} uses this dependency in a continual repair workspace. A working version retains edits and receives feedback from development tasks. A released version advances only after the working version completes a source task and passes an independent selection comparison. Historical executions are then checked against the complete change set. Executions that encounter a changed activation condition are evaluated again; untouched evidence retains its original execution identity. The current AutomationBench adapter restarts affected tasks from their initial state. This gives an implementable form of selective validation without requiring restoration of intermediate model and environment states.
+Evaluation controls both the production of variants and their later acceptance. A false pass removes a failure from editing. A false rejection can teach a correction that contradicts the authorized task. Our principal contribution traces these decisions from the score and eligibility branch to the changed artifact and deployed action. A conditional exclusion result states when the learning rule removes a necessary repair from consideration.
 
-The central design tension lies in the unit of release. Components may be individually local, but a release combines their effects. Its validation set is the union of all affected executions. One global prompt edit therefore makes every historical execution relevant to the new release, even when the same release contains a narrowly applicable executable component. Figure~\ref{fig:architecture} connects the repair process to these local and global cases. The union rule makes locality a property of the entire change being accepted.
+The evidence combines 2,006 historical executions with a frozen follow-up of 462 executions on six sources and 24 previously unexposed transfer tasks. Reconstruction joins 599 proposal records to version contents and follows 65 edits. Offline replay checks all 17,141 follow-up actions and 63 historical executions containing component effects. Complete business review supplies 11,554 obligation judgments. A 240-execution intervention within the historical population tests whether late access to knowledge explains global validation dependencies.
+
+The runtime results locate failures after construction. An inherited component remains inactive despite repeated invocation, and fewer tool failures coexist with unchanged strict success. Direct task evidence improves the next attempt; the feedback organization intervention misses its transfer target. Source and target materials identify the authority conditions a reusable decision must preserve.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.96\textwidth]{figure1.pdf}
-\caption{Continual repair and activation boundaries. A working version accumulates repairs, and a source-task success enables comparison with the released version. A local component remains invisible until a matching runtime event. Historical executions outside its influence can retain their evidence. A global change expands the affected set to all executions. The local path illustrates the mechanism; the evaluated releases followed the global path, with 48 of 48 GNOSIS validation plans requiring execution.}
-\label{fig:architecture}
+\includegraphics[width=\textwidth]{fig1_evaluation_flow.png}
+\caption{Evaluation shapes the construction of inherited behavior. (1) A trajectory expresses a business obligation. (2) Strict scoring controls editing: HR's false pass closes the repair opportunity, while the failed sales assertions supply the editor's guidance. (3) Candidates inherit that interpretation. All three legal sales edits produce \texttt{CLOSED}, pass strictly, and violate the latest Director instruction. Runtime effects establish whether inherited components act. (4) Later applicable tasks test retention and transfer. The lower path counts historical requirement exposures; its execution gaps are tracked separately.}
+\label{fig:framework}
 \end{figure*}
 
-We examine three connected questions. RQ1 asks how persistent repairs change performance and execution expense on held-out workflows. RQ2 asks whether activation boundaries preserve usable evidence and reduce validation work. RQ3 asks how learning expenditure translates into accepted releases and task delivery under a comparable resource allocation. Four frozen agents are evaluated on the same 30 tasks, with five independent executions per task. A further comparison allocates GNOSIS's development and evaluation expenditure to sequential attempts on those tasks.
+\section{From inherited structure to accumulated function}
+\label{sec:construction}
 
-The resulting system achieves the highest observed strict success rate among the four frozen agents, 67.33\%, with 17 tasks succeeding in all five executions. Its frozen execution expense is 49.81\% below the fixed agent. At the same time, the evaluated updates expose the structural obstacle predicted by the union rule: every delivered unit has global scope, every mature comparison requires full candidate execution, and historical evidence reuse is zero. The strict-success difference against the fixed agent is 3.33 percentage points, with a task-paired 95\% interval of $[-4.00,10.00]$ and Holm-adjusted $p=0.656250$. These estimates define the observed performance result alongside the exact validation behavior.
+\subsection{An obligation supplies the functional identity}
 
-The paper contributes an execution dependency definition with a coupling argument, a repair architecture that applies this definition to versioned evidence, and an empirical analysis connecting release scope to resource use. The analysis identifies two concrete constraints on further improvement. Global edits consume the entire validation set, and a selection set at its maximum score offers no further strict improvement signal. Both constraints arise within the repair process and directly determine how additional learning resources can be used.
+Schr\"odinger's account of living organization concerns its maintenance through exchange with the environment~\cite{schrodinger1944life}; evolvability concerns the functional variants available to selection~\cite{kirschner1998evolvability}. For an agent, these relations connect an obligation to an inherited procedure and that procedure to valid action. Runtime expression and task authority determine its function on each opportunity.
 
-\section{Related work}
-\label{sec:related}
+We identify a business obligation by the required action or value, its affected object, and the conditions authorizing it. Function is observed through satisfaction of that obligation in application state or recorded actions. Functional accumulation requires its renewed satisfaction through inherited artifacts on later applicable opportunities. A source correction establishes behavior on the source task; retention follows subsequent versions under the same obligation; transfer tests use in new tasks whose objects and authority must be established again.
 
-\subsection{Persistent experience with fixed model weights}
+The observation unit is one obligation exposed in one edit package, paired with the resulting candidate and its successor executions. The request and saved rationale identify which obligation becomes an editing objective. Distinct exposures can concern the same obligation. For textual units, the model input establishes availability; behavioral evidence establishes what the execution does. For executable units, recorded branch effects establish an intervention. This preserves the distinction between content reaching the runtime and a business obligation being completed.
 
-External experience changes agent behavior through several representations. Reflexion stores verbal feedback in episodic memory to improve later attempts~\cite{reflexion}. ExpeL extracts cross-task insights from successful and failed demonstration rollouts~\cite{expel}. Voyager accumulates executable skills that can be retrieved and composed in subsequent tasks~\cite{voyager}. Evo-Harness formalizes skill compilation by separating reflective lesson generation from structured executable constraints~\cite{evoharness}. These approaches establish text and code as persistent carriers of experience. The representation also determines where the experience enters execution: an instruction affects the decisions made with that instruction in context, while an executable skill introduces a particular callable behavior.
+\subsection{The historical construction path}
 
-Agentic Context Engineering (ACE) maintains a structured playbook through generation, reflection, and incremental curation~\cite{ace}. SkillOpt optimizes skill documents through bounded edits informed by execution feedback~\cite{skillopt}. GEPA uses reflections over execution traces to guide prompt evolution~\cite{gepa}. GNOSIS permits both textual units and executable components within a versioned workspace. Its validation rule depends on when the changed unit becomes visible, so the same dependency definition applies to a retrieved instruction and to an operation that changes a tool call. Our ACE comparison uses its official reflection and curation implementation with the common execution model.
-
-StarHarness evolves environment-specific execution systems and separates search from hidden selection and held-out evaluation~\cite{starharness}. GNOSIS adopts its benchmark adapter and deterministic improvement machinery. The continuous repair loop adds a persistent working version and requires complete source-task success before mature comparison. This arrangement keeps partial repairs available for further development while independently controlling advancement of the released version.
-
-\subsection{Local control, composition, and execution dependencies}
-
-EvoCUE installs experience as edits to an explicit state-machine controller and evaluates parent and edited continuations from the same checkpoint~\cite{evocue}. AutoHarness automatically synthesizes action verifiers that reject illegal actions before environment execution~\cite{autoharness}. In failure analysis across multi-step executions, Model or Harness? localizes the earliest unrecovered divergence along a trajectory to isolate model deficiency from tool and harness constraints~\cite{modelorharness}. GNOSIS studies a complementary dependency question: given a complete version change, which historical trajectories remain unchanged under a coupling of the executions? Pre-activation invisibility yields this criterion, and taking the union across edits extends it to an entire release. Our adapter evaluates affected tasks from the beginning; checkpoint continuation is outside the evaluated implementation.
-
-CORDIS formalizes spatiotemporal composability using revertible effects and reactive coeffects~\cite{cordis}. It supplies a programming model for coordinating dynamic components and their dependencies. GNOSIS uses Cordis to register and manage executable plugins, with component code evaluated inside QuickJS. The historical evidence relation is defined by the agent runtime's activation events. Plugin composition provides the execution substrate on which that relation is enforced.
-
-Regression test selection offers the closest software-engineering abstraction. Ekstazi tracks dynamic file dependencies to select tests after changes~\cite{ekstazi}. GNOSIS associates a historical execution with the runtime events it reaches. A change affects the execution when an old or new component can activate at one of those events. This handles newly introduced components by testing their activation conditions against existing traces. The dependency includes information exposed to the model, which makes prompt visibility and tool discovery part of the execution contract.
-
-\subsection{Acceptance and resource allocation}
-
-SAGE evaluates candidate updates through paired outcomes and a statistical acceptance rule~\cite{sage}. GNOSIS records SAGE statistics on mature comparisons while using the StarHarness improvement decision with a zero-regression condition for publication. Acceptance and evidence selection thus have distinct roles: the first determines whether an update advances the released version; the second determines which executions must be performed to supply that comparison.
-
-Evaluation of persistent adaptation also requires the cost of obtaining experience. \emph{Rethinking the Evaluation of Harness Evolution for Agents} argues for matched feedback and inference budgets together with held-out tasks~\cite{rethinking}. We separate frozen execution expense from development expenditure and include sequential revision as an alternative allocation of the latter. This accounting connects the benefit of a persistent version to the number of tasks over which its acquisition cost is shared. It also exposes whether an apparent resource advantage occurs during deployment, validation, or the complete evaluated process.
-
-\section{GNOSIS: repair and validation through activation boundaries}
-\label{sec:method}
-
-\subsection{Versioned continual repair}
-
-Let $G$ denote an ordered collection of persistent experience units used by an agent with fixed model parameters. GNOSIS maintains three version references: a working version $W$, a released version $R$, and a frozen version $F$ used for final evaluation. An edit creates an immutable collection and moves $W$ to it. Development execution produces task outcomes and traces associated with that exact version. Acceptance moves $R$ to $W$; freezing sets $F=R$ and closes learning. The separation prevents an unsuccessful intermediate repair from replacing the released behavior.
-
-The repair model operates on actual development evidence. It can inspect an authorized task's trajectory, edit the collection, and execute another development task. The resulting failure or success returns to the same repair process. For example, correcting pagination may reveal that a required notification remains unsent. Keeping both edits in the working version allows the process to complete the workflow without discarding the earlier correction. The source task must satisfy every strict assertion before the current working version can enter mature comparison. Any subsequent edit invalidates that maturity record because it creates a different candidate.
-
-A mature candidate is compared with the released version on a separate selection set. A rejected comparison leaves the released version in place and returns selection feedback to the repair model. The working version remains available for further edits. This makes the selection set an adaptive development resource with a distinct role from the final held-out tasks. Those final tasks are evaluated only after versions have been frozen, and their outcomes never enter repair messages.
+Across 65 edits, we follow 263 feedback exposures through the editor's rationale and into subsequent business behavior. The editor selects 167 exposures in its rationales and fully incorporates 159 of those. Readable successor executions cover 72, and 63 reach completion at least once (Figure~\ref{fig:requirements}). Each completion concerns the obligation that motivated the edit, with its object and authority preserved. The resulting $63/263=23.95\%$ connects feedback to observed business completion. Another 20 complete incorporations fall outside the rationale-selected path, bringing the total to 179. For 173 exposures, the corresponding candidate receives zero executions, leaving the path open at deployment.
 
 \begin{figure}[t]
-\hrule\smallskip
-\small
-\noindent\textbf{Algorithm 1: Continual repair with activation boundaries}
-\begin{enumerate}
-\setlength{\itemsep}{2pt}
-\item Initialize working and released collections $W=R$ and an evidence store $\mathcal H$.
-\item Inspect authorized development evidence and edit $W$; clear the source-success marker after each edit.
-\item Execute a development task using $W$. Retain its result and return feedback to the repair process.
-\item If the current $W$ has completed a source task, permit a mature comparison. Obtain selection evidence for $R$ and compute $\Delta=\operatorname{diff}(R,W)$.
-\item For each reference execution $h$, evaluate $W$ from task start if $h\in\mathcal V(\Delta)$; otherwise carry its evidence forward with the source execution identity.
-\item Apply deterministic improvement and zero-regression conditions to the paired results. Advance $R\leftarrow W$ on acceptance.
-\item Continue repair until the learning process stops or its group allowance is exhausted. Freeze $F\leftarrow R$.
-\end{enumerate}
-\smallskip\hrule
+\centering
+\includegraphics[width=\columnwidth]{fig2_requirements_flow.pdf}
+\caption{Nested requirement exposure sets across 65 edits. Completion concerns the exposed obligation in observed successors. Another 20 complete incorporations lie outside the rationale-selected path. The 173 exposures without candidate execution are tracked separately from these stage counts.}
+\label{fig:requirements}
 \end{figure}
 
-\subsection{Experience units and the runtime contract}
+Each stage determines what the agent can carry forward. In the HR source, the omitted deferral must reach the editor as a failure before it can become a repair objective. An inherited guard needs usable task information and a matching runtime event to change an action. A later task introduces its own object and authority: a procedure learned for one announcement can prescribe the wrong action under a new instruction. The obligation gives us a common reference for tracing these changes from the original failure to the later action.
 
-Each unit contains an identifier, an activation scope, a set of runtime hooks, and textual experience. An optional component type and TypeScript source add executable behavior. A local scope names services, endpoints, or tools. The special scope \Global{} is exclusive: it cannot be combined with local scope entries in the same unit. Version identity covers the collection and its order, so changing the order of retained units participates in dependency analysis.
+\section{System and evidence}
+\label{sec:evidence}
 
-The runtime registers events at task start and at tool discovery, before and after tool calls, and at context, workflow, and operation hooks. Each event identifies its hook and the applicable service, endpoint, or tool. A unit is eligible when its hook is registered for that event and its scope matches the event identity. These matches concern API identities and runtime structure. The model supplies the experience and chooses its intended scope during repair.
+\subsection{Two decisions through which evaluation controls learning}
 
-Local units remain invisible until a matching event. Before activation, their contents do not enter model prompts or alter the tool catalog, and the host does not load their plugin. After activation, the hook constrains their available interventions. Arguments can change before a call; returned observations can change after it; context and workflow hooks can supply messages. Executable operations become callable only after activation. Successful responses and error observations pass through the same registered observation path, and discovered endpoints generate discovery events. This coverage makes failed interaction attempts part of the dependency trace.
+\Gnosis{} stores textual units and executable components in versioned collections. A working collection retains edits, while a released collection advances through independent comparisons. Units specify runtime hooks and activation scope. Text can enter a model request; executable components can change arguments or observations and issue the task's original tool calls. The evaluator and permissions remain outside the agent's control.
 
-The host compiles component source and registers it as a Cordis plugin~\cite{cordis}. QuickJS execution and operating-system isolation constrain the component to the capabilities of the current task. A component can request the task's existing API operations and consume their results; permissions and the benchmark evaluator remain outside its control. Runtime records distinguish loading a plugin from an intervention that changes execution. An invocation with no effect is still a component invocation, but it contributes no observed argument, context, or capability change.
+The historical release rule requires observable improvement and zero task regression on six selection tasks, with two executions per task. A source must first succeed before a mature version comparison begins. In the frozen follow-up, strict failure on the source first run opens four editing slots, while strict success deploys the ancestor in all four. Every legal follow-up candidate is frozen before source retesting and transfer evaluation; source retests occur after deployment has been decided.
 
-The final GNOSIS collection contains 13 textual units and one executable component, \texttt{ace\_op\_vp\_guard}. The latter handles position information at the API argument interface. This component demonstrates where a repair can be installed within the runtime. Its invocation and intervention counts are examined separately in Section~\ref{sec:scope-results}, so the empirical explanation follows the behavior that actually occurred.
+The eligible historical population contains 2,006 executions after the 7 October 2026 exclusion cutoff. The recovered graph has 130 vertices and 148 parent to child links across 211 version events. Proposal records include inspection actions as well as edits. Historical comparisons retain their batch conditions and task identities. The initial frozen evaluation, the subsequent interface studies, and the timing intervention are subsets of this historical population.
 
-\subsection{Activation boundaries and reusable evidence}
-\label{sec:boundary}
+\subsection{Frozen intervention and business completion}
 
-Let $G$ be a released version and $G'$ a candidate. The change set $\Delta$ includes additions and deletions, together with both old and new forms of modified units. Changes to scope or relative order are included. Write a trajectory's registered events as $e_0,e_1,\ldots$, and let $a_u(e)$ indicate whether unit $u$ can activate at event $e$. The first activation boundary is
-\begin{equation}
-b^*(\tau,\Delta)=\inf\{k:\exists u\in\Delta,\ a_u(e_k)=1\},
-\label{eq:boundary}
-\end{equation}
-with $b^*=\infty$ if the set is empty. Considering both old and new activation conditions detects effects removed by a deletion as well as effects introduced by an addition.
+The follow-up uses one source from each of finance, HR, marketing, operations, sales, and support. Each source has four structurally related transfer tasks checked against all recorded prior exposure. All four editing conditions begin with the same ancestor, containing 13 textual units and one executable component. F0 supplies the complete source trajectory and assertion feedback. F1 retains those facts and adds a view organized by requirement, object, and action consequence. Its quotations resolve to the supplied source. R0 permits ordinary textual content. R1 requires nonempty \texttt{applies\_when}, \texttt{avoids}, and \texttt{guidance} fields in the JSON content of changed units; unchanged ancestor units persist verbatim. This treatment adapts the boundary representation of BASM~\cite{lin2026basm}.
 
-The boundary property rests on three assumptions. First, the task's initial state and the model and environment transition laws are fixed across versions. Second, changed units have no influence before their first eligible event, and all influence paths pass through the registered runtime. Third, the mathematical comparison couples model and environment randomness across executions. Removing the first assumption changes the underlying process. Removing the second permits divergence before the recorded boundary. Removing the coupling removes sample-path equality. Independent API executions in the experiment use task pairing for statistical analysis; the common-randomness construction is used for the property below.
+The common limits are 24 units and 80,000 serialized characters; the ancestor occupies 65,524 characters. Format failure permits one retry and then retains the ancestor. All failures and untriggered slots remain in the workflow outcome. Seed 20261014 fixes the editing order and interleaves transfer evaluation within source blocks. Each of the four edit conditions, the ancestor, and the carry condition runs four tasks three times per block: 432 executions. Six source first runs and 24 retests give 462 in total. The protocol was sealed on 14 October 2026.
 
-\begin{proposition}[Pre-activation invariance]
-Under these assumptions, executions of $G$ and $G'$ with the same random source have identical states and observations before $b^*$. If $b^*=\infty$ on the execution of $G$, the complete coupled trajectories and their scores are identical.
-\label{prop:invariance}
-\end{proposition}
+The follow-up model is \texttt{deepseek-flash}, accessed through DeepSeek's official API. Requests enable thinking with high reasoning effort and temperature 1. Each response permits up to 393,216 output tokens. AutomationBench~\cite{automationbench} is fixed at commit \texttt{4a8e106}, with its API toolset and at most 50 agent steps. Each run resets the task world and component state.
 
-Before the first eligible event, neither version exposes the changed units. Identical inputs and coupled randomness produce identical model actions, while equal environment transitions produce the same observations and next events. Induction extends this equality until activation or termination. In particular, a new unit cannot generate its own earlier trigger without first influencing an execution, which the invisibility condition excludes. Appendix~\ref{app:proof} provides the detailed argument.
+Task success requires all applicable obligations and normal termination, with execution errors counted as failures. Complete review defines obligations once per task and checks every run. A known failure fixes a failure label; remaining cases with unresolved obligations are unknown. Confirmed success uses all scheduled runs as its denominator. We retain original strict scoring and frozen assertion-indexed judgments alongside business review.
 
-Let $A_\Delta$ denote the event that an execution reaches a changed activation condition, and let the task score $Y$ lie in $[0,1]$. The same coupling yields
-\begin{equation}
-\left|\E_{G'}[Y]-\E_G[Y]\right|
-\leq \Prob_G(A_\Delta).
-\label{eq:bound}
-\end{equation}
-Outside $A_\Delta$, Proposition~\ref{prop:invariance} makes the score difference zero. Inside it, the absolute difference is at most one. The probability of reaching the change therefore bounds the maximum change in expected score. This is a dependency bound for a fixed version pair; it does not require estimating that probability from a validation batch.
+All 462 follow-up trajectories are replayed in the fixed official environment. Initial contracts, assertion outcomes, and strict success labels agree in $462/462$. The 63 historical executions with component effects also agree in $63/63$. Entity correspondence and runtime date differences remain separate from score agreement. An independent Codex agent checks 3,331 added obligation instances and reads 54 executions requiring semantic interpretation; 18 disagreements concern one quotation authority choice and alter one task label. The researcher reviews the final evidence. The supplement records provenance and all alternative authorization readings.
 
-For a historical evidence collection $\mathcal H$, define the affected set of a unit and of the complete change as
-\begin{align}
-\mathcal I(u)&=\{h\in\mathcal H:\exists e\in h,\ a_u(e)=1\},\\
-\mathcal V(\Delta)&=\bigcup_{u\in\Delta}\mathcal I(u).
-\label{eq:union}
-\end{align}
-An untouched record describes the same execution under the candidate when coupled to its original random source. GNOSIS preserves that record with its originating execution identity. This transfer does not create another independent observation. The provenance is part of the candidate's evidence, and repeated use of the record retains that dependence.
-
-Global edits are conservatively assigned $\mathcal I(u)=\mathcal H$ by the validation planner. Thus one changed global unit implies $\mathcal V(\Delta)=\mathcal H$. Missing boundary traces also require execution, while an incompatible program or source-version identity prevents a record from serving as reference evidence. These rules give every reusable record a specific version and a trace on which absence of influence was checked.
-
-\subsection{Mature selection and validation expense}
+\section{Evaluation defines the reachable repairs}
 \label{sec:selection}
 
-The selection set contains six tasks, with two executions per task on each side of a comparison. Reference evidence is indexed by the released version and is retained for subsequent comparisons of that version. Candidate evidence is assembled by applying Equation~\eqref{eq:union}. Each affected record causes one fresh execution from task start. An unaffected record is carried forward without a new API execution. The global-validation control follows the same repair process and always executes the candidate side in full.
+\subsection{A missing obligation becomes a missing learning opportunity}
 
-For candidate execution costs $c_h$, the direct candidate validation expense is
+Let $h$ be a source trajectory, $Q(h)$ its binary evaluator score, and $B(h)$ its complete business outcome. In the follow-up, edit eligibility is $A(h)=1-Q(h)$. For current version $v$ and legal update operator $U$, the deployed version is
 \begin{equation}
-C_{\mathrm{candidate}}(\Delta)=\sum_{h\in\mathcal V(\Delta)}c_h.
-\label{eq:cost}
+v'=
+\begin{cases}
+v, & Q(h)=1,\\
+U(v,h), & Q(h)=0\text{ and generation succeeds},\\
+v, & \text{generation fails}.
+\end{cases}
+\label{eq:eligibility}
 \end{equation}
-The complete comparison also includes any reference evidence that must be obtained and other actual calls. Equation~\eqref{eq:cost} prices whole executions because the adapter has no complete intermediate-state restoration interface. The first boundary determines whether execution is required and records the potential starting point for a future continuation mechanism.
+A false pass therefore changes the data generating process of learning. The omitted business failure receives no editing opportunity under this rule. Reformatting evidence downstream of $A$ leaves that decision intact.
 
-Publication combines the StarHarness deterministic improvement and promotion decisions with zero regression on paired task outcomes. Mean strict success and per-task success rates enter the improvement check, with mean partial credit available to its verifier criterion. For regression, a task is solved only if both executions succeed; a previously solved task becoming unsolved counts as a loss. A candidate advances the released version only when the improvement checks pass and the loss count is zero.
+In the HR source, the latest eligibility email requires an Airtable deferral for the employee on sabbatical and leaves courses unassigned. The first run creates four active employee records and omits that deferral. All nine assertions pass. Equation~\eqref{eq:eligibility} consequently closes all four editing slots, which deploy the ancestor. Every source retest repeats the business omission and passes the assertions. The unchanged content and the code path establish why this failure persists across the five observed executions.
 
-The same evidence also produces SAGE paired statistics with penalty one and one-sided significance level 0.05~\cite{sage}. These statistics accompany the comparison. With six selection tasks, five wins and zero losses are required for the paired sign test to reach that level. Using deterministic improvement for publication allows smaller complete repairs to advance while retaining an explicit record of the statistical evidence. This choice also gives the selection process a finite ceiling: once both strict success and the verifier score are maximal, further candidates have no improvement margin on that set.
+The defect also gives the required correction a negative signal. Strict assertion 5 forbids \texttt{create\_record} for the employee targeted by the deferral. Creating the required record through that operation would fail the assertion. The source pass therefore suppresses an attempt, and the conflicting assertion penalizes the corrective action. Proposition~\ref{prop:exclusion} states the conditions under which this conflict restricts the functional variants available to the learner.
 
-\section{Experimental design}
-\label{sec:design}
+\begin{proposition}[Evaluator exclusion of a required correction]
+\label{prop:exclusion}
+Suppose business completion requires action $D$, evaluator success requires its absence, and a release rule preserves evaluator success on that task. From an evaluator-passing incumbent, every evaluated correction that performs $D$ on the protected task is excluded. Under Equation~\eqref{eq:eligibility}, an evaluator-passing source also produces zero edit attempts for that source, regardless of the available editing budget.
+\end{proposition}
 
-\subsection{Tasks and shared execution conditions}
+To see this, write $\mathcal B_D$ for trajectories satisfying the required action and $\mathcal Q$ for evaluator-passing trajectories. The hypotheses give $\mathcal B_D\subseteq\{D=1\}$ and $\mathcal Q\subseteq\{D=0\}$, hence $\mathcal B_D\cap\mathcal Q=\varnothing$. Preserving evaluator success excludes every corrective trajectory. The source statement follows directly from $A=0$. Removing the contradictory assertion removes this exclusion; changing the source eligibility rule removes the zero-attempt restriction. The HR execution instantiates the observed source restriction and the action conflict. Its four alternative edited lineages were never run.
 
-AutomationBench is fixed at commit \texttt{4a8e106}, using its original API tools and strict final-state assertions~\cite{automationbench}. The task split uses seed 100, with 30 development tasks, six independent selection tasks, and 30 held-out tasks. Each split covers six business domains. Six development tasks, one per domain, also serve as a retention checkpoint. The checkpoint outcomes are stored separately and excluded from repair feedback. Appendix~\ref{app:protocol} specifies the task identities and frozen versions.
+\subsection{Feedback can teach the evaluator's error}
 
-The execution and repair model is the official DeepSeek API model \texttt{deepseek-flash}. Thinking is enabled, reasoning effort is high, temperature is one, and each execution has at most 50 agent steps. The configured maximum output is 393,216 tokens per model response; the model context capacity is 1M tokens. Reasoning content is retained across tool-call rounds. These settings are fixed for all groups. A development execution check completes all 30 tasks, succeeds on 21, and records no output truncation among the nine failures, satisfying the execution condition for learning to begin.
+The sales source supplies the converse case. Under the main authorization reading, the latest Director instruction requires \texttt{MAJOR WIN}. The first run follows it and completes the business task. The original assertions demand \texttt{CLOSED} and prohibit \texttt{WIN:} and \texttt{MAJOR WIN:}, so editing begins. The editor's saved rationale explicitly cites the failed assertions, reclassifies the Director instruction as an unadopted suggestion, and elevates the older observed format to authority.
 
-Each frozen group performs five independent executions per held-out task, for 150 executions per group and 600 in total. Every execution initializes the task environment and component state anew. The input does not contain a previous held-out answer or its feedback. Comparability therefore depends on common initial states and scoring contracts, while transfer depends on excluding held-out evidence from learning. Removing either condition changes the interpretation of the group comparison. All 600 frozen evaluations terminate normally under the execution protocol; strict failure still occurs when final-state assertions are unsatisfied.
-
-\subsection{Comparison groups and resource allocation}
-
-The \emph{Fixed} agent has no learned experience units. \emph{ACE} uses the official reflector and curator to maintain textual experience~\cite{ace}. \emph{Global} uses the GNOSIS repair workspace with full candidate validation. \emph{GNOSIS} applies activation-based evidence selection in that workspace. Global and GNOSIS share the same learning allowance, USD~8.5 at the experiment's reference prices. Fixed and ACE have allowances of USD~2 and USD~3, respectively. These are limits on settled learning and selection expenditure; unused allowance remains unused when a learning process stops.
-
-The allowances define the comparison conditions, and actual settled expense determines resource use. Global spends USD~3.028831 on learning and selection, and GNOSIS spends USD~4.310552. The two groups follow their own candidate trajectories, with four mature comparisons each. ACE's final playbook is represented as one textual unit; Global freezes 17 textual units, and GNOSIS freezes 14 units in total. Final evaluation uses each group's released collection after freezing.
-
-The \emph{Repeat} condition allocates GNOSIS's development-plus-held-out expense equally across the same 30 held-out tasks. Within a task, successive attempts receive the preceding process for revision, and the final attempt determines its score. The allocation includes GNOSIS's learning, selection, and checkpoint expense together with its five-execution held-out evaluation. Fixed-candidate retests are excluded from this allocation and reported separately. Repeat uses 354 attempts overall and produces 30 final outcomes.
-
-\subsection{Outcomes and statistical analysis}
-
-The primary endpoint is strict success. For task $i$ and group $g$, $\bar Y_{ig}$ is the fraction of its five independent executions satisfying all benchmark assertions. Group differences are means of the 30 paired task differences. A two-sided exact paired permutation test enumerates all sign assignments of nonzero differences. Confidence intervals use 200,000 paired bootstrap resamples of tasks with random seed 100. Holm correction applies to the three primary GNOSIS-versus-control comparisons.
-
-Partial credit is averaged over the five executions within each task. A second task outcome records whether all five executions succeed, and paired differences in this binary outcome use the two-sided exact McNemar test. Each secondary endpoint has its own three-comparison Holm family. Retaining the task as the statistical unit preserves the shared task structure of repeated executions. Repeat's final-attempt endpoint is reported as the delivery outcome of its sequential allocation, alongside the independent-execution average of the frozen agents.
-
-\subsection{Cost definitions}
-
-Reference expense is computed from settled token usage at CNY~1 per million uncached input tokens, CNY~0.02 per million cached input tokens, and CNY~4 per million output tokens. USD allowances use CNY~7.1 per USD. Frozen execution cost covers only the 150 held-out executions of a group. Development cost includes learning and selection, plus the retention checkpoint where present. Total experimental cost additionally includes fixed-candidate retests. Unsettled reservations are excluded from these totals.
-
-The provider export supplies aggregate cash expenditure, while the local call ledger supplies group and phase attribution. The export contains 18,467 requests totaling CNY~206.71348282. Local settled reference expense is CNY~203.837800, leaving CNY~2.875683 at aggregate level. The export has daily totals without a request-to-group mapping. Appendix~\ref{app:cost} provides the usage categories and daily amounts, keeping the provider total and the experimental group accounting explicit.
-
-\section{Results}
-\label{sec:results}
-
-\subsection{RQ1: held-out performance and frozen execution cost}
-
-GNOSIS achieves 101 strict successes in 150 held-out executions, or 67.33\%, the highest observed rate among the four frozen versions (Table~\ref{tab:main}). It exceeds Fixed by 3.33 percentage points, ACE by 8.00, and Global by 5.33. The corresponding task-paired 95\% intervals are $[-4.00,10.00]$, $[-2.67,19.33]$, and $[-2.00,12.67]$ percentage points. All three Holm-adjusted $p$-values are 0.656250. The observed ranking favors GNOSIS; the primary comparisons do not reach the 0.05 significance threshold.
-
-\begin{table*}[t]
-\centering
-\caption{Held-out outcomes and settled reference expense. Each frozen agent has 150 executions on 30 tasks. Repeat has 30 final outcomes after 354 sequential attempts. All-five counts apply to the frozen groups. Costs are CNY, rounded here to three decimals; Appendix~\ref{app:cost} gives phase details. Total expense includes development and fixed-candidate retests where present.}
-\label{tab:main}
-\begin{tabular}{lrrrrr}
-\toprule
-Group & Strict success (\%) & Partial credit & All five / 30 & Held-out cost & Total cost\\
-\midrule
-Fixed & 64.00 & 0.857796 & 10 & 28.279 & 34.339\\
-ACE & 59.33 & 0.849316 & 11 & 24.112 & 34.283\\
-Global & 62.00 & \textbf{0.905716} & 12 & 17.351 & 41.256\\
-GNOSIS & \textbf{67.33} & 0.905183 & \textbf{17} & \textbf{14.194} & 48.128\\
-\midrule
-Repeat & 53.33 & 0.733767 & --- & 45.832 & 45.832\\
-\bottomrule
-\end{tabular}
-\end{table*}
-
-The task matrix in Figure~\ref{fig:matrix} shows how repeated success is distributed. Seventeen GNOSIS tasks succeed in every execution, compared with ten for Fixed, eleven for ACE, and twelve for Global. Against Fixed, eight tasks move into the all-five category and one moves out. The exact McNemar $p$-value is 0.039063 before correction and 0.117188 after correction. Appendix~\ref{app:statistics} reports the complete paired results. The all-five outcome emphasizes consistent completion within a task and complements the mean success rate.
-
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{figure2.pdf}
-\caption{Strict success by held-out task and frozen group. Each cell is the success fraction from five independent executions. The matrix retains the task structure used in paired statistical analysis and shows the distribution of tasks that succeed in all five executions.}
-\label{fig:matrix}
-\end{figure*}
-
-Partial credit describes a different part of task completion. Global has the highest average, 0.905716, followed by GNOSIS at 0.905183. GNOSIS's difference from Fixed is 0.047386, with a task-paired 95\% interval of $[0.012508,0.085662]$ and adjusted $p=0.050743$. The gap between partial and strict success reflects the requirement that every assertion hold for a complete workflow. A system can satisfy most requirements on many tasks while missing the final condition needed for strict success.
-
-GNOSIS also has the lowest frozen execution expense, CNY~14.194113. Relative to Fixed, ACE, and Global, the reductions are 49.81\%, 41.13\%, and 18.19\%, respectively. Its average held-out execution costs CNY~0.094627, compared with CNY~0.188528 for Fixed. These amounts price task execution after learning has ended. Adding development and retesting brings GNOSIS's total to CNY~48.128490, the highest of the four frozen groups. The expenditure split locates the observed economy in deployment execution.
-
-\subsection{RQ2: global changes eliminate reusable evidence}
-\label{sec:scope-results}
-
-Every delivered experience unit has \Global{} scope. Across GNOSIS's four mature comparisons, all 48 candidate validation plans select the global-scope path, with first boundary zero and restart at task start. Each comparison therefore performs 12 candidate executions and reuses zero records. Equation~\eqref{eq:union} predicts this behavior directly: a global member of the change set includes every reference execution in the affected union.
-
-Two fixed candidate pairs provide a further comparison of validation modes. One pair comes from Global and one from GNOSIS. Each pair is evaluated using both activation-based selection and full validation. Both modes abstain on both pairs, yielding decision agreement of two out of two. Each candidate side performs 12 executions and reuses none (Table~\ref{tab:retest}). Execution savings are exactly zero.
+All three legal candidates rewrite that decision rule. F0R0 also installs a guard to normalize the announcement prefix. On source retest, all three strictly pass and violate the latest Director instruction. The fourth slot fails generation, retains the ancestor, and satisfies the business task while failing the assertions (Table~\ref{tab:source}). The edited candidates inherit the evaluator's interpretation through the editor's rationale and the resulting announcement rule.
 
 \begin{table}[t]
 \centering
-\caption{Fixed-candidate retests. Scoped and full validation both abstain for each pair. Counts are candidate executions / reused records; expense is candidate execution cost in CNY.}
-\label{tab:retest}
-\small
-\begin{tabular}{lrr}
+\caption{Evaluation changes what is learned. Each entry is strict / complete business success. Sales uses the latest Director interpretation. Retests deploy the version recorded in the last column.}
+\label{tab:source}
+\footnotesize
+\renewcommand{\arraystretch}{1.13}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}llcc@{}}
 \toprule
-Candidate source & Scoped & Full\\
+Source & Execution & Strict / business & Deployment\\
 \midrule
-Global: execution / reuse & 12 / 0 & 12 / 0\\
-Global: cost & 1.094279 & 1.306276\\
-GNOSIS: execution / reuse & 12 / 0 & 12 / 0\\
-GNOSIS: cost & 0.996941 & 0.859561\\
+HR & First run & $1/0$ & Ancestor\\
+ & Four retests & $1/0$ in all four & Ancestor\\
+\addlinespace
+Sales & First run & $0/1$ & Ancestor\\
+ & Three legal edits & $1/0$ in all three & Candidates\\
+ & Failed generation & $0/1$ & Ancestor\\
 \bottomrule
-\end{tabular}
+\end{tabular*}
 \end{table}
 
-The two modes still incur different token expenses because they perform separate complete executions. Scoped validation costs CNY~0.211997 less for the Global pair and CNY~0.137379 more for the GNOSIS pair. With identical execution counts and no reused record, these differences arise from the usage of the fresh executions. The reuse mechanism contributes zero to the measured savings.
+The sales judgment follows the latest Director instruction. Under the older VP standard, \texttt{CLOSED} is correct. Sensitivity analysis evaluates all eight combinations of sales, quotation, and logging authority; the HR eligibility decision and the direction of the sales edits remain the same across these readings.
 
-Runtime behavior further distinguishes executable availability from executable influence. The final GNOSIS guard is invoked 6,276 times across the 150 held-out executions, including 150 task-start invocations and 6,126 before-call invocations. It produces zero recorded interventions and zero capability calls. The 13 textual units are injected 1,950 times in total. The evaluated version thus supplies persistent textual guidance throughout held-out execution while its executable guard remains behaviorally inactive. Local pre-activation behavior has an offline check on one synthetic component; the learned releases exercise the global validation case.
+Across the 462 follow-up executions, complete review finds 262 confirmed successes, 179 failures, and 21 unknown outcomes. There are 102 strict passes with confirmed business failure and 38 strict rejections with confirmed business success. All 21 unknown runs strictly pass and remain outside those 102 errors. The source cases show how these disagreements affect learning: the score controls whether editing begins, and its assertions can become future guidance.
 
-\subsection{RQ3: accepted releases and selection saturation}
+\subsection{A saturated evaluator stops acceptance before money runs out}
 
-GNOSIS accepts two updates, compared with one for Global. Dividing by settled learning and selection expense gives 0.463978 accepted releases per USD for GNOSIS and 0.330160 for Global, a 40.53\% increase. Both groups make four mature comparisons and execute 48 candidate records. The higher acceptance density occurs with equal validation execution counts and no evidence reuse. It reflects the accepted updates obtained along the two learning trajectories.
+The earlier release experiment exposes a second restriction on reachable improvement. Both repair groups use a USD~8.5 allowance. The global validation group spends USD~3.028831 and GNOSIS USD~4.310552 before their released selection scores reach $12/12$. Their final comparisons give maximal candidate and reference scores and abstain. The remaining allowances are USD~5.471169 and USD~4.189448, respectively. GNOSIS's frozen held-out score is $101/150$: saturation of the 12 selection observations coexists with 49 failures in held-out execution.
 
-The selection outcomes expose the stopping condition. GNOSIS advances the released mean from $10/12$ to $11/12$ and then to $12/12$. Global advances from $10/12$ directly to $12/12$. Their last comparisons both have a candidate mean of one and a released mean of one, and both abstain. At that point the current selection scores provide no further strict improvement. Global retains USD~5.471169 of its allowance and GNOSIS retains USD~4.189448. Figure~\ref{fig:cost} places accepted releases against cumulative settled expenditure, locating the steps at their actual acceptance events.
+Once every score used by a strict improvement rule reaches its maximum on a fixed panel, the rule has exhausted its admissible increases. Cheaper validation leaves this ceiling intact. Further accepted improvement requires feedback that can distinguish candidates at the remaining business failures.
 
-\begin{figure*}[t]
+\section{Usable experience depends on runtime and task authority}
+\label{sec:expression}
+
+After construction, a candidate must reach execution and satisfy an applicable obligation. The runtime studies follow its validation dependencies and component effects through to application state.
+
+\subsection{Validation locality is a property of information flow}
+
+Selective regression testing depends on the consumers of a change~\cite{ekstazi}. For changed agent units $\Delta$, let $\mathcal I(u)$ contain historical executions whose runtime inputs or actions can depend on unit $u$. The validation set is
+\begin{equation}
+\mathcal V(\Delta)=\bigcup_{u\in\Delta}\mathcal I(u).
+\label{eq:union}
+\end{equation}
+Globally exposed changes make every task a consumer. Declaring narrow intent leaves this dependency intact whenever the runtime still exposes the changed content to the entire panel.
+
+All 48 historical GNOSIS candidate validation plans rerun the complete panel and reuse zero executions. Three independently learned source repairs in the locality study all remain global and cover $36/36$ audit runs each. A subsequent scope interface comparison produces 19 legal candidates, every one containing global content; its eight mature candidates all require $12/12$ audit runs. Changing the declaration format leaves the runtime dependency broad.
+
+The 240-execution timing intervention tests the proposed explanation that local guidance arrived too late. It fixes eight repairs and compares global early, local early, local delayed, contract early with body delayed, and removed guidance. Local early is noninferior to global early: $+2.08\pp$, with interval $[-4.17,8.33]\pp$ at the prespecified ten point margin. The planning versus execution-detail interaction for local early minus delayed is $-4.17\pp$, $p=1.0$, interval $[-25.00,12.50]\pp$. The prespecified analysis finds no reproducible timing pattern. Host dependency sets still cover every task in each of the eight audit pools, and routing plus prediction makes selective validation more expensive.
+
+Early local access preserves utility under a fixed route. Every audit task still depends on the changed content, so routing saves zero validation runs. Selective validation requires some consumers to remain independent of the whole change. Equation~\eqref{eq:union} locates the observed burden in this information flow.
+
+\subsection{Executable inheritance can preserve an inactive procedure}
+
+Across history, 27 executable units enter 447 executions and produce 196 effects in 63 distinct executions; components themselves issue 27 tool calls. Of the 13 effect-bearing runs covered by complete business review, six succeed and seven fail. The runtime supports interventions, whose business consequences require a further check.
+
+The inherited \texttt{ace\_op\_vp\_guard} receives 27,500 invocations across history and follow-up, with zero effects and zero component tool calls. The count separates into 720 task starts, 26,745 URLs outside its target branch, and 35 target URLs. Of the target cases, 23 obtain no usable prefix, ten already have the correct prefix, and two have invalid JSON bodies. The host passes \texttt{ctx.task} as an object, while the component reads \texttt{String(ctx.task)} and obtains \texttt{[object Object]}. The intended instruction is lost at the interface. Isolated replay of the original code in 45 saved real contexts reproduces zero argument changes and zero calls; all ten task starts reproduce that object conversion.
+
+\subsection{Shared interfaces leave business decisions task dependent}
+
+The subsequent frozen comparison on 18 new tasks makes the distinction between operational and business transfer visible. GNOSIS reduces failed tool calls from 651 to 112 and average actions from 75.14 to 39.31, while strict success stays at $20/36$ (Table~\ref{tab:efficiency}). Its execution expenditure falls from CNY~7.8513 to CNY~3.2733. Across 377 matched parent and candidate comparisons, 217 reduce tool failures; 159 of those do so without increasing strict success. These comparisons retain their shared execution identities.
+
+\begin{table}[t]
 \centering
-\includegraphics[width=\textwidth]{figure3.pdf}
-\caption{Learning and amortized expense. Left: accepted releases against cumulative settled learning and selection expense, with steps at the recorded acceptance events. Right: development-inclusive expense per task for GNOSIS and sequential revision, accumulated in the fixed held-out task order. GNOSIS's evaluation term includes five independent executions per task. The observed curves do not intersect within 30 tasks.}
-\label{fig:cost}
+\caption{Operational improvement and task completion on the same 18 tasks, two runs each. Failed calls are totals; actions are means; expenditure covers the 36 executions in CNY.}
+\label{tab:efficiency}
+\footnotesize
+\renewcommand{\arraystretch}{1.13}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lrrrr@{}}
+\toprule
+Agent & Failed calls & Actions & Success & Cost\\
+\midrule
+Fixed & 651 & 75.14 & $20/36$ & 7.8513\\
+Global & 165 & 45.47 & $25/36$ & 3.9763\\
+GNOSIS & 112 & 39.31 & $20/36$ & 3.2733\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+Business completion requires the right operation on the right object under the current authority. Successful interface use addresses the first of these conditions. The inherited rule must still identify which document controls the task and which entities or exceptions it covers. The target task can reverse the source decision while using the same application (Table~\ref{tab:authority}). All 24 transfer tasks receive a reading against candidate contents and their own authorized materials.
+
+\begin{table*}[t]
+\centering
+\caption{Authority and identity conditions change across tasks. Source rules occur in edited candidate content; target requirements come from the frozen task materials.}
+\label{tab:authority}
+\footnotesize
+\renewcommand{\arraystretch}{1.18}
+\begin{tabularx}{\textwidth}{@{}lLL@{}}
+\toprule
+Requirement & Inherited source decision & Authorized target decision\\
+\midrule
+Sales authority & Ignore account notes that redirect a deal announcement; retain the established announcement channel. & The DocuSign completion runbook explicitly authorizes account notes to determine credit holds and partner billing.\\
+\addlinespace
+Support identity & Group duplicates by exact email; records from different email addresses remain separate. & The cross-platform deduplication task supplies an alias table identifying different addresses as one customer and requires reciprocal internal notes.\\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+Several candidates retain source literals and authority decisions. Table~\ref{tab:authority} identifies target conditions under which those rules require revision. The aggregate experiment measures the full workflow across all tasks, including sources that retain the ancestor.
+
+\section{Transfer tests the function constructed from source feedback}
+\label{sec:transfer}
+
+\subsection{The organization intervention changes a restricted part of learning}
+
+Detailed assertion feedback enters edit rationales in $154/187$ exposures (82.35\%), compared with $7/70$ task summaries (10.00\%). Twelve of 17 repeatedly exposed requirement groups are never selected. This motivates the organization intervention: F0 and F1 receive the same complete facts, and F1 adds an organized view after eligibility. Both conditions retain the eligibility rule and the destination task's authority.
+
+Twelve of the 24 slots never enter editing because HR, marketing, and operations strictly pass. The other 12 slots produce nine legal candidates and three terminal format failures, all under R1. Six R0 candidates change 51 units; three legal R1 candidates each change one. All slots retain their observed deployment in Table~\ref{tab:transfer}. The treatment includes its generation burden and the updates it actually produces.
+
+For source block $b$, the primary difference averages four transfer tasks and three repetitions, then averages equally across the six blocks:
+\begin{equation}
+\begin{aligned}
+d_b&=\frac{1}{12}\sum_{t=1}^4\sum_{r=1}^3
+\bigl(y_{btr,\mathrm{F1R0}}-y_{btr,\mathrm{F0R0}}\bigr),\\
+\widehat\Delta&=\frac{1}{6}\sum_b d_b.
+\end{aligned}
+\label{eq:effect}
+\end{equation}
+The frozen test enumerates 64 sign assignments, with a 95\% common shift inversion interval on a 0.0001 grid. Inference assumes exchangeable block signs and a common shift. The prespecified practical target is $+10\pp$.
+
+\begin{table*}[t]
+\centering
+\caption{Full workflow outcomes on 24 transfer tasks, 72 runs per condition. Percentages use the complete denominator, including unknown outcomes. Every editing slot retains its actual deployment.}
+\label{tab:transfer}
+\footnotesize
+\renewcommand{\arraystretch}{1.14}
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+\toprule
+& \multicolumn{2}{c}{Source deployment slots} & \multicolumn{2}{c}{Original and frozen evaluation} & \multicolumn{2}{c}{Complete business review}\\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(l){6-7}
+Condition & Legal edits & Ancestor & Strict success & Frozen success & Confirmed success & Unknown\\
+\midrule
+F0R0 & 3 & 3 & 56 (77.8) & 58 (80.6) & 41 (56.9) & 4\\
+F1R0 & 3 & 3 & 49 (68.1) & 51 (70.8) & 40 (55.6) & 4\\
+F0R1 & 1 & 5 & 51 (70.8) & 53 (73.6) & 43 (59.7) & 3\\
+F1R1 & 2 & 4 & 45 (62.5) & 47 (65.3) & 36 (50.0) & 2\\
+\addlinespace
+Ancestor / fresh retry & --- & 6 & 51 (70.8) & 55 (76.4) & 41 (56.9) & 4\\
+Carry & --- & 6 & 72 (100.0) & 72 (100.0) & 49 (68.1) & 4\\
+\bottomrule
+\end{tabular*}
+\end{table*}
+
+Under frozen judgments, F1R0 minus F0R0 is $-9.72\pp$, $p=0.25$, interval $[-33.33,8.33]\pp$. Its upper endpoint is below the practical target, so organization fails the prespecified decision. Complete business review gives $-1.39\pp$, $p=1.0$, interval $[-25.00,8.33]\pp$. The alternative quotation authority gives zero difference and interval $[-25.00,16.66]\pp$. Assigning unknown obligations to minimize or maximize the contrast bounds the observed difference by $[-6.94,4.17]\pp$; the maximizing assignment has interval $[-8.33,16.66]\pp$.
+
+The three sources that trigger editing average a $+2.78\pp$ business contrast; those retaining the ancestor average $-5.56\pp$ (Figure~\ref{fig:contrast}). The latter have identical content and inputs across conditions, so their differences arise in execution. Sixty groups with the same version, task, initial state, and input cover 360 paid runs; 328 of 1,548 within-group pairs change frozen labels (21.19\%). These pairs share executions. The R1 simple increment and interaction have Holm adjusted $p=1.0$, and no block supplies four legal edited candidates. The negative result concerns the full implemented workflow, including unchanged deployments and failed generation.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig3_contrast_blocks.pdf}
+\caption{Business success under F0R0 and F1R0, grouped by actual editing eligibility. Each source block has 12 runs per condition. The right column gives count differences; group headings report mean differences in percentage points. Ancestor-retaining blocks use identical artifacts and inputs.}
+\label{fig:contrast}
+\end{figure}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{fig4_transfer_vs_carry.pdf}
+\caption{Persistent transfer and direct task evidence. (a) Confirmed business success uses all 72 scheduled runs per condition. F1R0 adds organized source feedback; Carry receives the preceding trajectory and evaluator feedback for the same task. (b) Actual costs of 72 two-attempt pairs, including the first attempt. Carry buys eight additional confirmed successes for CNY~0.615916 more and lowers cost per confirmed success.}
+\label{fig:transfer}
 \end{figure*}
 
-\subsection{Sequential revision and amortized expense}
+\subsection{Direct task evidence supports correction}
 
-GNOSIS spends CNY~46.271988 on development plus held-out evaluation. Repeat spends CNY~45.831735, 0.95\% below the allocated amount. Under this near-equal resource allocation, GNOSIS's strict success is 67.33\% and Repeat's final-result success is 53.33\%, a difference of 14.00 percentage points. Repeat's mean partial credit is 0.733767. The two endpoints follow the allocation policies: GNOSIS averages five independent deliveries per task, and Repeat scores the last delivery after sequential revision.
+Carry receives its preceding ancestor trajectory with actions, tool returns, and assertion feedback, then restarts the original task world. Fresh retry uses the three ancestor runs in a fixed cyclic pairing per task. The 72 pairs therefore contain 72 distinct ancestor runs, each used once as a first attempt and once as another pair's retry. Aggregation preserves this sharing.
 
-Let $D$ denote GNOSIS's development expenditure, $c_i$ the cost of all five independent evaluations of held-out task $i$, and $r_i$ the cost of its sequential attempts. In the fixed task order, the observed amortized costs are
-\begin{equation}
-A_G(n)=\frac{D+\sum_{i=1}^{n}c_i}{n},\qquad
-A_R(n)=\frac{\sum_{i=1}^{n}r_i}{n}.
-\label{eq:amortization}
-\end{equation}
-At $n=30$, these are CNY~1.542400 and CNY~1.527725 per task. The GNOSIS curve remains above the Repeat curve for every observed prefix from one to 30 tasks. The evaluated allocation achieves a higher final success rate with persistent experience and has no observed cost crossover. The five-execution cost term is retained explicitly, so this curve describes the evaluated resource allocation.
+Carry raises frozen success from $55/72$ to $72/72$. Nine extra successes follow a failed first run and eight follow a passing first run. Complete business success increases from $41/72$ to $49/72$. The complete two-attempt cost increases from CNY~13.881212 to CNY~14.497128, or CNY~0.008554 per pair. Cost per confirmed success falls from CNY~0.338566 to CNY~0.295860. The prespecified lower total cost criterion fails; the observed benefit is eight additional confirmed successes for CNY~0.615916 more.
 
-\subsection{Retention during repair}
+Direct evidence improves the fixed model's next attempt on the same task (Figure~\ref{fig:transfer}). Transfer additionally requires an inherited decision to remain valid when objects and authority change. F1 organizes the source facts; execution must still establish whether the resulting guidance applies at the destination.
 
-The six-task development checkpoint improves from four strict successes to five. Two tasks change from failure to success, and one changes from success to failure. Partial credit rises from 0.934524 to 0.958333. This pattern shows that an improving aggregate can coexist with a loss on an individual earlier task. The checkpoint uses a working candidate distinct from the final frozen release; Appendix~\ref{app:components} identifies both versions. Maintaining separate working and released references assigns this intermediate behavior to the candidate that produced it.
+\section{Acquisition and retention of business function}
+\label{sec:functional}
 
-\section{Discussion}
-\label{sec:discussion}
+Across all successors of the candidates traced in Section~\ref{sec:construction}, 117 requirement and execution observations contain 92 passes, 12 failures, 12 summaries without an identifiable requirement, and one unloaded component. Twenty requirement successes occur inside whole task failures. An agent can satisfy one obligation while failing another required for task success. Tracing individual requirements preserves these partial achievements for later comparison.
 
-\subsection{Release locality is the resource that selective validation uses}
+Retention begins at a verified functional success. Among 83 original assertion sequences, 54 have a subsequent applicable opportunity and 43 show no later failure, a conditional retention rate of 79.63\%. The other 29 lack follow-up. Expanded tracing of 196 event sequences gives 111 retained, 19 later failed, 60 without a successor, and six without a verified starting success. These observations establish that some completed functions persist across versions. Their opportunity counts distinguish sustained function from a version that simply continues to contain an artifact.
 
-The zero-reuse result follows from the granularity of accepted change. GNOSIS supports activation conditions tied to particular runtime events, yet the evaluated learning process delivers globally scoped units. The validation planner consequently includes every execution. This behavior reveals a design requirement for productive selective validation: a mature release must preserve locality across its entire change set. A local executable edit packaged with global textual revisions has global validation expense.
+The protocol follows each obligation through the decisions needed to establish accumulated function. Task materials supply its authority; the score controls eligibility. The rationale and version difference show what the editor constructs. Successor inputs and component effects locate its expression, and application state establishes completion. Later applicable opportunities test retention; new tasks test the validity of transferred decisions. Failed generation and unchanged deployments retain their expenditure and outcomes.
 
-The union rule also explains why counting local components alone is an inadequate measure of available savings. Two narrow components may jointly reach nearly every task, while several changes confined to the same small workflow may share one affected set. The relevant quantity is the coverage of the union on reference executions. Exposing that coverage to the repair process would make the resource consequence of an edit explicit. Source-task success remains the maturity requirement, and the estimated validation workload becomes part of choosing how to assemble a complete repair.
+\section{Related work}
 
-This leads to a specific architectural direction: construct mature changes whose activation conditions capture the operational dependency actually repaired. A procedure for handling an endpoint's pagination rule has a natural interface boundary. A general instruction to verify all writes reaches a wider set of workflows. Both may improve task execution, and the planner can price their distinct validation demands through the same event relation. Update locality determines how much of the historical evidence remains usable.
+Reflexion~\cite{reflexion}, ACE~\cite{ace}, and Voyager~\cite{voyager} establish verbal and executable carriers of experience. EASE~\cite{xiong2026ease} studies skill curation conditioned on downstream executor behavior. BASM~\cite{lin2026basm} represents applicability and failure conditions within retrieval and action checking. R1 changes how edited units are represented; its outcomes include failed generation and unchanged ancestor deployments.
 
-\subsection{Selection capacity constrains continual learning}
+Agent Plasticity~\cite{singh2026agentplasticity} studies inheritance and acquisition efficiency, including failures despite relevant artifacts. EvoPathBench~\cite{lin2026beyondendpoint} measures acquisition and retention alongside the gap between candidate improvements and selected updates. SkillScriptBench~\cite{liu2026skillscriptbench} follows documentation and script repair through preservation. We extend these process questions to business obligation identities and the control decisions that determine whether a repair is attempted.
 
-Both repair groups stop with substantial allowance remaining after the released selection mean reaches one. The deterministic acceptance rule requires observable improvement and forbids regression. At the score ceiling, continued edits have no strict-success margin on the six selection tasks. Learning resources therefore exceed the discriminating capacity of the feedback available for publication.
-
-A continuing repair system needs selection evidence that retains sensitivity to the changes it is asked to judge. Broader workflow coverage can reveal dependencies absent from a small fixed set, and repeated measurements can characterize variability within a task. These serve different purposes. The experiment uses the same fixed six-task set adaptively, so its accepted-release count is tied to that feedback surface. Extending the selection evidence while maintaining an untouched final evaluation is the direct way to study whether additional repair expenditure yields further transferable updates.
-
-The rejected intermediate Global candidate illustrates the role of the regression condition. Its mean strict success matches the released version and its partial-credit criterion improves, yet a previously solved selection task regresses. The final publication decision abstains. The working version can continue to change, while the released reference remains protected by the specified per-task condition. This interaction gives the separation between repair and release practical meaning even before the selection ceiling is reached.
-
-\subsection{Acquisition expense and deployment efficiency}
-
-The frozen GNOSIS agent costs roughly half as much per held-out execution as Fixed. The experiment also spends more to acquire and evaluate that agent. At the observed scale, all-stage expense is CNY~48.128490 for GNOSIS and CNY~34.338908 for Fixed. These amounts describe successive parts of a persistent learning system's economics: acquiring a reusable version creates an initial expense, and using it generates repeated execution expense.
-
-Equation~\eqref{eq:amortization} makes the deployment scale explicit. An initial investment is shared across more tasks as $n$ increases, while cumulative execution expense depends on the tasks actually encountered. The measured 30-task sequence has no crossover against sequential revision. The experiment therefore supports a deployment-efficiency result at the frozen-execution level and a higher development-inclusive expense for the evaluated sequence. A longer deployment study must measure the future task mix and execution costs to locate a crossover.
-
-The invocation records also locate the active representation in the final version. Textual experience enters every held-out execution, and the executable guard records no interventions. The performance and expense estimates belong to that complete released collection. Experiments with mature, locally activated executable repairs would connect operational intervention to the selective validation mechanism and test whether saved executions can fund further accepted repairs.
-
-\subsection{Empirical scope and mechanism tests}
-
-The empirical evidence consists of one learning trajectory for each adaptive group, one model configuration, and five independent frozen evaluations on each of 30 tasks. The repeated evaluations characterize task execution under those learned versions. Variation across separately learned versions is a further experimental dimension. The primary success comparisons retain this scope through task-level confidence intervals and adjusted significance tests.
-
-The evaluated learned changes all have global scope, and the local mechanism has been checked offline on one synthetic component. This creates a precise next test: obtain a source-completing local release, identify reference executions outside its activation union, and compare reused evidence with fresh full validation on the same fixed version pair. The comparison should report the number of reusable records together with decision agreement and actual executions saved. These quantities directly test the dependency mechanism on learned behavior. Prefix continuation adds a separate engineering requirement: restoring the complete model and environment state at the boundary.
+Execution Consistency~\cite{yu2026executionconsistency} follows information through use and obligation completion. GAUGE~\cite{bodhwani2026gauge} studies evaluation validity and candidate rankings; VeriHarness~\cite{zhang2026veriharness} checks disputed claims and omissions against environmental evidence. SilentProbe~\cite{li2026silentprobe} studies failures despite apparently valid API behavior. We trace the evaluator's judgment into a persistent change, retaining obligations whose learning opportunity closes before an edit exists. Our validation argument draws on regression test selection~\cite{ekstazi}: the consumers of edited content determine the validation set.
 
 \section{Conclusion}
 
-GNOSIS connects continual agent repair to the maintenance of execution evidence. Working versions retain partial repairs, released versions advance through mature comparisons, and activation boundaries determine which historical executions enter a change's validation set. Under pre-activation invisibility and common randomness, trajectories agree before the first changed activation event, yielding a bound on expected score change and a record-level criterion for evidence transfer.
+Evaluation controls which business errors become learning objects and which interpretation enters persistent experience. In GNOSIS, the HR eligibility branch suppresses a needed correction. The sales edits inherit a scoring interpretation that reverses the latest Director instruction. A saturated selection panel also stops acceptance while money and held-out failures remain.
 
-On 30 held-out AutomationBench tasks with five independent executions each, GNOSIS achieves 67.33\% strict success and reduces frozen execution expense by 49.81\% relative to Fixed. The primary task-paired comparison has Holm-adjusted $p=0.656250$. Every delivered unit has global scope, so all 48 mature validation plans require execution and reuse saves zero executions. Two accepted updates bring the selection score to its ceiling, and development-inclusive expense remains above sequential revision across the observed 30 tasks.
+Following each obligation from feedback through runtime expression establishes where an inherited artifact supplies function. Later applicable opportunities test whether that function persists. Direct task evidence improves the next attempt, while the implemented organization treatment misses its transfer target.
 
-The method and results identify release locality as the condition for selective validation to save work. They also identify selection-feedback capacity as a constraint on further accepted improvement. A continual repair system must form changes with bounded execution dependencies and retain evidence capable of distinguishing the next useful release. These requirements provide a concrete basis for extending persistent agent learning beyond the evaluated global-update regime.
-
-\section*{Research materials and author contribution}
-The appendices specify task identities, frozen versions, statistical procedures, and phase costs. The study uses AutomationBench's task environments and existing assertions. Zonghe Wu is the sole author. AI assistance was used for literature retrieval, manuscript drafting, and LaTeX preparation.
-
-\bibliography{ecai}
-
+\balance
+\input{gnosis.bbl}
 \clearpage
+\nobalance
 \appendix
-\section{Activation boundary property}
-\label{app:proof}
-
-Fix a task with initial state $s_0$. A state includes the environment, the complete model message history, component state, and the tool catalog visible to the model. Model sampling and environment randomness are represented by an exogenous sequence $\omega$. The execution law for either version is obtained by applying the same model and environment transition functions to its state and the appropriate coordinates of $\omega$.
-
-The change set includes the old and new descriptions of every modified unit, all added and deleted units, and units whose relative order changes. Let $A_\Delta$ be the event that the execution under $G$ reaches an event eligible for any such description. The eligibility check occurs before the associated intervention. Global changes are assigned an affected set containing every execution by the planner, which is a conservative extension of event eligibility.
-
-\paragraph{Induction.}
-At initialization the states agree because the task and unchanged runtime are identical. Assume the two states and observations agree through event $k-1$ and that no changed unit has been eligible. Pre-activation invisibility makes the next model input and available tools identical. Applying the same coordinate of $\omega$ to the common model distribution yields the same action. The common environment transition and coupled environment randomness yield the same response. The runtime consequently produces the same next event. If this event is outside all changed activation conditions, the unchanged components produce the same next state. This proves equality up to the first eligible event. If termination occurs first, the final states and scores agree.
-
-\paragraph{Additions, deletions, and scope changes.}
-An added component's condition can be checked on the old trajectory because the next event is equal until the component is eligible. Deletion is handled by retaining the old condition in $\Delta$. A scope change retains both conditions. Relative reordering is included because simultaneous eligible components can have order-dependent effects. Each case preserves the induction's requirement that no changed influence is present before the first event in the union.
-
-\paragraph{Expected-score bound.}
-Couple the two complete executions using $\omega$, and write their scores as $Y'$ and $Y$. Proposition~\ref{prop:invariance} gives $Y'=Y$ on $A_\Delta^c$. Since both scores belong to $[0,1]$,
-\begin{align}
-\left|\E[Y']-\E[Y]\right|
-&\leq \E\bigl[|Y'-Y|\bigr]\\
-&=\E\bigl[|Y'-Y|\ind_{A_\Delta}\bigr]\\
-&\leq \Prob_G(A_\Delta).
-\end{align}
-The probability is taken under the old-version execution law, whose path determines whether the first boundary is reached. Coupling preserves the marginal law of both complete executions. The argument holds for binary strict success and for any bounded partial-credit score.
-
-\paragraph{Evidence transfer.}
-An unaffected historical record retains its original task state and random realization in this construction. It therefore has an equal candidate counterpart. Carrying it forward preserves that identity and its dependence on earlier comparisons. A fresh API call on an affected task draws new randomness; the practical adapter records it as a new execution. The method uses the property to assign the scope of evidence, and the held-out experiment independently samples complete frozen executions for its reported performance estimates.
-
+\raggedbottom
 \input{appendix}
-\typeout{get arXiv to do 4 passes: Label(s) may have changed. Rerun}
 \end{document}

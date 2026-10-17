@@ -1,9 +1,77 @@
 from copy import deepcopy
 
 from engine.scoped_units import fingerprint
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 HOOKS = ("task_start", "tool_discovery", "before_call", "after_call", "context", "workflow", "operation")
 TRACE_SCHEMA = "gnosis.boundaries.v1"
+
+
+class TaskBoundary(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    hook: Literal["before_call", "after_call", "tool_discovery"]
+    tool: str | None = None
+    service: str | None = None
+    endpoint: str | None = None
+    arguments: dict = Field(default_factory=dict)
+    occurrence: int = Field(default=1, ge=1)
+
+    def locate(self, trace):
+        matches = [event for event in trace if event["hook"] == self.hook
+                   and all(value is None or event.get(key) == value
+                           for key, value in (("tool", self.tool), ("service", self.service),
+                                              ("endpoint", self.endpoint)))
+                   and all(event.get("arguments") is not None and event["arguments"].get(key) == value
+                           for key, value in self.arguments.items())]
+        return matches[self.occurrence - 1] if len(matches) >= self.occurrence else None
+
+
+class KnowledgeTreatment(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schema_version: Literal["gnosis.timing.v1"] = "gnosis.timing.v1"
+    source: str
+    treatment: Literal["G", "L", "D", "C", "N"]
+    task: str
+    selected: bool
+    route_version: str
+    contract: str
+    remainder: str
+    delay: TaskBoundary
+
+    def text_at(self, trace):
+        if self.treatment == "N" or (self.treatment != "G" and not self.selected):
+            return "", []
+        early = self.treatment in ("G", "L")
+        delayed = self.delay.locate(trace) is not None
+        parts = []
+        if self.contract and (early or self.treatment == "C" or delayed):
+            parts.append(("contract", self.contract))
+        if self.remainder and (early or delayed):
+            parts.append(("remainder", self.remainder))
+        return "".join(value for _, value in parts), [key for key, _ in parts]
+
+
+def provide_knowledge(prompt, state):
+    treatment = KnowledgeTreatment.model_validate(state["knowledge_treatment"])
+    text, parts = treatment.text_at(state["boundary_trace"])
+    return ([{"role": "system", "content": text}, *prompt] if text else prompt), parts
+
+
+def knowledge_validation_tasks(before, after, routes, contract_consumers, route_consumers):
+    # 未入选任务独立运行且正文无其他读取路径；撤掉该假设，局部正文更新必须扩大重测集合。
+    affected = set()
+    selected = {task for task, enabled in routes.items() if enabled}
+    if before["route_version"] != after["route_version"]:
+        affected.update(route_consumers)
+    if before["contract"] != after["contract"]:
+        affected.update(contract_consumers)
+        affected.update(selected)
+    if before["remainder"] != after["remainder"]:
+        affected.update(routes if "G" in (before.get("treatment"), after.get("treatment")) else selected)
+    if before.get("treatment") != after.get("treatment"):
+        affected.update(routes if "G" in (before.get("treatment"), after.get("treatment")) else selected)
+    return sorted(affected)
 
 
 def response_termination(response):

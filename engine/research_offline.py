@@ -372,6 +372,18 @@ async def unit_checks(checks, folder, version, cfg):
     checks.check(len(events) == 1 and events[0]["tool"] == "api_fetch", "未经 call_tool 的观测没有留下 after_call 边界")
     checks.check(any(a.get("rejected") for a in state["actual_tool_actions"]), "未经 call_tool 的观测没有登记实际动作")
 
+    # Q4 协议修复：api_fetch 的 params/body 传字符串 "null" 与省略同效，
+    # 不再触发路由层 'NoneType' object is not a mapping（drive/sheets 端点的确定性失败）。
+    env_null = environment(dataset_one, task_row, folder)
+    normalized = env_null.update_tool_args("api_fetch", {"method": "GET", "url": "https://www.googleapis.com/drive/v3/files",
+                                                         "params": "null", "body": "null"}, [], state)
+    checks.check("params" not in normalized and "body" not in normalized, "字符串 null 没有按无值丢弃")
+    fixed_call = await tool_call(env_null, state, "api_fetch",
+                                 {"method": "GET", "url": "https://www.googleapis.com/drive/v3/files",
+                                  "params": json.dumps({"pageSize": 50, "fields": "files(id,name,mimeType)"}),
+                                  "body": "null"}, "null_body_call")
+    checks.check("NoneType" not in fixed_call.content, "字符串 null 仍触发路由层 TypeError")
+
 
 async def run(full_replay=False):
     os.environ["GNOSIS_DISABLE_MODEL_CALLS"] = "1"

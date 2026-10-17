@@ -5,6 +5,7 @@ import json
 import sqlite3
 import uuid
 import subprocess
+import sys
 import time
 from email.utils import parsedate_to_datetime
 from pathlib import Path
@@ -179,9 +180,15 @@ class CallJournal:
         (folder / "response.json").write_text(response.model_dump_json(indent=2), encoding="utf-8")
 
     def failure(self, folder, category, error, **details):
-        from openai import APIStatusError
+        from openai import APIConnectionError, APIStatusError
+        from httpx import ConnectError, ConnectTimeout, PoolTimeout
 
         record = {"version": self.version, "category": category, "error_type": type(error).__name__,
+                  "http_status": error.status_code if isinstance(error, APIStatusError) else None,
+                  "transport_error_type": type(error.__cause__).__name__ if error.__cause__ else None,
+                  "billing_unconfirmed": (isinstance(error, APIConnectionError) and
+                      not isinstance(error.__cause__, (ConnectError, ConnectTimeout, PoolTimeout))) or (
+                      isinstance(error, APIStatusError) and error.status_code not in (400, 401, 402, 403, 404, 422, 429)),
                   "error": f"服务返回 HTTP {error.status_code}" if isinstance(error, APIStatusError) else str(error), "call": folder.name,
                   **details}
         (folder / "failure.json").write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")

@@ -1,0 +1,100 @@
+\begin{thebibliography}{10}
+
+\bibitem{bodhwani2026gauge}
+Umesh Bodhwani, Thanh Tran, and Kai Wei.
+\newblock {GAUGE}: When not to trust {LLM}-as-a-judge in user-simulated
+  evaluation of task-oriented agents.
+\newblock arXiv:2609.12191v1, 2026.
+
+\bibitem{ekstazi}
+Milos Gligoric, Lamyaa Eloussi, and Darko Marinov, `Practical regression test
+  selection with dynamic file dependencies', in {\em Proceedings of the 2015
+  International Symposium on Software Testing and Analysis}, pp. 211--222. ACM,
+  (2015).
+\newblock \url{https://doi.org/10.1145/2771783.2771784}.
+
+\bibitem{kirschner1998evolvability}
+Marc Kirschner and John Gerhart, `Evolvability', {\em Proceedings of the
+  National Academy of Sciences}, {\bf 95}(15),  8420--8427, (1998).
+
+\bibitem{li2026silentprobe}
+Zongrong Li, Shengkun Ye, Feiyou Guo, and Zuoyou Dang.
+\newblock {SilentProbe}: Measuring silent failure in production {APIs} used as
+  agent tools.
+\newblock arXiv:2609.00035v1, 2026.
+
+\bibitem{lin2026beyondendpoint}
+Hongqiang Lin, Chao Liu, Xiaofan Bai, Xuan Jin, Yuhong Li, Nenggan Zheng, and
+  Xipeng Cao.
+\newblock Beyond endpoint performance: Process-level evaluation of
+  self-evolving agents.
+\newblock arXiv:2609.24663v1, 2026.
+
+\bibitem{lin2026basm}
+Zihan Lin, Zhenyu Chen, Jiawen Wei, Xiaohan Wang, Jie Cao, Jiajun Chai, Wei
+  Lin, Guojun Yin, and Ran He.
+\newblock When not to imitate: Boundary-aware skill memory for reliable
+  tool-use {LLM} agents.
+\newblock arXiv:2608.22339v1, 2026.
+
+\bibitem{liu2026skillscriptbench}
+Yuxuan Liu, Haoran Li, Yuhao Zhang, Jiahe Guo, Hongyu Luo, Wenbin Hu, Huihao
+  Jing, Kawai Chung, Junle Chen, Changxuan Fan, Qing Zong, Lingyun Xie, and
+  Yangqiu Song.
+\newblock {SkillScriptBench}: Benchmarking self-evolution of executable agent
+  skill packages beyond {Markdown}.
+\newblock arXiv:2610.04008v1, 2026.
+
+\bibitem{schrodinger1944life}
+Erwin Schr{\"o}dinger, {\em What Is Life? The Physical Aspect of the Living
+  Cell}, Cambridge University Press, 1944.
+
+\bibitem{automationbench}
+Daniel Shepard and Robin Salimans.
+\newblock {AutomationBench}.
+\newblock arXiv:2604.18934, 2026.
+
+\bibitem{reflexion}
+Noah Shinn, Federico Cassano, Edward Berman, Ashwin Gopinath, Karthik
+  Narasimhan, and Shunyu Yao.
+\newblock Reflexion: Language agents with verbal reinforcement learning.
+\newblock arXiv:2303.11366, 2023.
+
+\bibitem{singh2026agentplasticity}
+Harman Singh, Anton Bakhtin, Rulin Shao, Gabriel Synnaeve, Ilia Kulikov, Rob
+  Fergus, Sanjeev Arora, Kurt Keutzer, Jason Weston, Anuj Mahajan, and Anirudh
+  Goyal.
+\newblock Agent plasticity: Measuring self-improvement through experience.
+\newblock arXiv:2610.08902v1, 2026.
+
+\bibitem{voyager}
+Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei Xiao, Yuke Zhu,
+  Linxi Fan, and Anima Anandkumar.
+\newblock Voyager: An open-ended embodied agent with large language models.
+\newblock arXiv:2305.16291, 2023.
+
+\bibitem{xiong2026ease}
+Zhen Xiong and Qiaoyu Tan.
+\newblock {EASE}: Behavior-adaptive skill curation for self-evolving agents.
+\newblock arXiv:2609.36746v1, 2026.
+
+\bibitem{yu2026executionconsistency}
+Zhe Yu, Zixuan Wang, Peidong Wang, Hehai Lin, Ruochen Zhao, and Chengwei Qin.
+\newblock Beyond corrected memory: Execution consistency in multi-agent
+  systems.
+\newblock arXiv:2610.08101v1, 2026.
+
+\bibitem{zhang2026veriharness}
+Caiqi Zhang, Rujun Han, Zifeng Wang, Zoey CuiZhu, Nigel Collier, Tomas Pfister,
+  and Chen-Yu Lee.
+\newblock {VeriHarness}: Scaling agentic verification for long-horizon tasks.
+\newblock arXiv:2610.00972v1, 2026.
+
+\bibitem{ace}
+Qizheng Zhang, Changran Hu, Shubhangi Upasani, Boyuan Ma, Fenglu Hong,
+  Vamsidhar Kamanuru, Jay Rainton, Chen Wu, Mengmeng Ji, Hanchen Li, Urmish
+  Thakker, James Zou, and Kunle Olukotun, `Agentic context engineering:
+  Evolving contexts for self-improving language models', in {\em International
+  Conference on Learning Representations}, (2026).
+
+\end{thebibliography}

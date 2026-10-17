@@ -23,7 +23,8 @@ ROOT = Path(__file__).resolve().parent.parent
 STATE_COLUMNS = ["scope_touches", "injection_events", "_assertion_results", "_perf", "error",
                  "gnosis_cost_usd", "wire_trace", "boundary_trace", "boundary_schema",
                  "termination_status", "actual_tool_actions", "active_extensions",
-                 "first_effect_boundaries", "component_invocations", "component_capability_calls", "harness_defects"]
+                 "first_effect_boundaries", "component_invocations", "component_capability_calls", "harness_defects",
+                 "knowledge_requests"]
 
 
 class ResearchEvaluator:
@@ -47,16 +48,17 @@ class ResearchEvaluator:
         return dataset.select([index]), row
 
     async def execute(self, workspace, version, task, arm, bucket="learning", role="learning", repeat=0,
-                      execution_id=None, revision=None, task_cost_cap=None, kind="execution"):
+                      execution_id=None, revision=None, task_cost_cap=None, kind="execution", knowledge_treatment=None,
+                      capture_world=False):
         # 同时最多 parallel_tasks 道题在跑；各题环境、客户端与断点文件互相独立，账本用 SQLite 事务串行记账。
         if self.slots is None:
             self.slots = asyncio.Semaphore(POLICY["parallel_tasks"])
         async with self.slots:
             return await self.execute_one(workspace, version, task, arm, bucket, role, repeat,
-                                          execution_id, revision, task_cost_cap, kind)
+                                          execution_id, revision, task_cost_cap, kind, knowledge_treatment, capture_world)
 
     async def execute_one(self, workspace, version, task, arm, bucket, role, repeat,
-                          execution_id, revision, task_cost_cap, kind):
+                          execution_id, revision, task_cost_cap, kind, knowledge_treatment=None, capture_world=False):
         role_map = {"learning": self.plan["search"], "selection": self.plan["selection"],
                     "checkpoint": self.plan["checkpoint"], "heldout": self.plan["heldout"]}
         if role not in role_map:
@@ -64,11 +66,17 @@ class ResearchEvaluator:
         if task not in role_map[role]:
             raise PermissionError("任务不属于该执行角色的固定集合")
         units = workspace.load_version(version)
+        if knowledge_treatment is not None and (units or revision):
+            raise ValueError("时机干预使用空公共组件且禁止追加修订提示")
         execution_id = execution_id or uuid.uuid4().hex
         path = self.output / "executions" / arm / (execution_id + ".json")
         resume_mode = os.environ.get("GNOSIS_RESUME_ONLY") == "1"
         if path.exists():
             record = json.loads(path.read_text(encoding="utf-8"))
+            if record.get("knowledge_treatment") != knowledge_treatment:
+                raise ValueError("执行断点的知识提供策略发生变化")
+            if capture_world and ("initial_world" not in record or "final_world" not in record):
+                raise ValueError("执行断点缺少业务状态")
             if (record["task"], record["version"], record["experiment_version"], record["repeat"], record["learning_role"]) != (task, version, self.version, repeat, role):
                 raise ValueError("执行断点输入发生变化")
             return record
@@ -85,7 +93,8 @@ class ResearchEvaluator:
         started = time.monotonic()
         try:
             env = ScopedAutomationEnv(dataset=dataset, rubric=create_rubric(), max_turns=POLICY["max_steps"],
-                                      toolset="api", injector=injector, execution_output=self.output)
+                                      toolset="api", injector=injector, execution_output=self.output,
+                                      knowledge_treatment=knowledge_treatment)
             if revision:
                 prompt = restore_messages(row["prompt"])
                 extra = {"role": "user", "content": "Review your previous execution and complete the original task in the fresh environment.\n" + json.dumps(revision, ensure_ascii=False)}
@@ -100,7 +109,8 @@ class ResearchEvaluator:
                                                        "max_tokens": POLICY["execution_output_tokens"],
                                                        "extra_body": {"thinking": {"type": "enabled"},
                                                                       "max_tokens": POLICY["execution_output_tokens"]}},
-                                        num_examples=1, rollouts_per_example=1, max_concurrent=1, state_columns=STATE_COLUMNS)
+                                        num_examples=1, rollouts_per_example=1, max_concurrent=1,
+                                        state_columns=[*STATE_COLUMNS, *(["world"] if capture_world else [])])
             raw = result["outputs"][0]
             error = raw.pop("error", None)
             execution_error = None
@@ -125,13 +135,20 @@ class ResearchEvaluator:
                       "boundary_trace": raw["boundary_trace"], "boundary_schema": raw["boundary_schema"],
                       "actual_tool_actions": raw["actual_tool_actions"], "wire_trace": raw["wire_trace"],
                       "termination_status": raw["termination_status"], "execution_error": execution_error,
-                      "active_extensions": raw.get("active_extensions", {}),
-                      "first_effect_boundaries": raw.get("first_effect_boundaries", {}),
-                      "harness_defects": raw.get("harness_defects", []),
+                      "active_extensions": raw.get("active_extensions") or {},
+                      "first_effect_boundaries": raw.get("first_effect_boundaries") or {},
+                      "component_invocations": raw.get("component_invocations") or 0,
+                      "component_capability_calls": raw.get("component_capability_calls") or 0,
+                      "harness_defects": raw.get("harness_defects") or [],
+                      "knowledge_treatment": knowledge_treatment,
+                      "knowledge_requests": raw.get("knowledge_requests") or [],
                       "prompt": to_jsonable_python(restore_messages(raw["prompt"])),
                       "completion": to_jsonable_python(restore_messages(raw["completion"])),
                       "cost_usd": raw["gnosis_cost_usd"], "validation_cost_usd": raw["gnosis_cost_usd"],
                       "duration_s": time.monotonic() - started}
+            if capture_world:
+                record["initial_world"] = json.loads(row["info"])["initial_state"]
+                record["final_world"] = raw["world"]
             save_json(path, record)
             return record
         finally:

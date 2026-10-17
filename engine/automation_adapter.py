@@ -18,7 +18,7 @@ from openai import APIConnectionError, APIStatusError
 from engine.component_host import CandidateError, HostError
 from engine.component_sandbox import IsolatedComponentHost
 from engine.scoped_units import fingerprint, POLICY, CallJournal, experiment_version, append_record, AIFormatError, TaskCostExceeded, require_model_access, require_harness_ready, ExecutionBlocked, ExecutionTruncated
-from engine.activation import boundary, activates, unit_hooks, response_termination
+from engine.activation import boundary, activates, unit_hooks, response_termination, provide_knowledge
 from engine.extension_protocol import validate_extension
 from jsonschema import Draft202012Validator
 from pydantic import ValidationError
@@ -81,6 +81,9 @@ class MeteredClient(OpenAIChatCompletionsClient):
         require_model_access()
         started = time.monotonic()
         state = kwargs["state"]
+        knowledge_parts = []
+        if state.get("knowledge_treatment") is not None:
+            prompt, knowledge_parts = provide_knowledge(prompt, state)
         initial_call = None
         for attempt in range(POLICY["service_retries"] + 1):
             self.journal.verify_version()
@@ -112,8 +115,17 @@ class MeteredClient(OpenAIChatCompletionsClient):
         cost = self.budget.settle(call_id, response.usage)
         state["gnosis_last_call"] = call_id
         choice = response.choices[0] if response.choices else None
+        if state.get("knowledge_treatment") is not None:
+            state.setdefault("knowledge_requests", []).append({
+                "call": call_id, "request_index": len(state.get("wire_trace", [])),
+                "boundary_index": len(state["boundary_trace"]) - 1,
+                "parts": knowledge_parts, "message_index": 0 if knowledge_parts else None,
+                "actual_actions_before_request": len(state["actual_tool_actions"])})
         state.setdefault("wire_trace", []).append({"request": prompt, "response": choice.message.model_dump(mode="json") if choice else None,
-                                                   "finish_reason": choice.finish_reason if choice else None, "call": call_id})
+                                                   "finish_reason": choice.finish_reason if choice else None, "call": call_id,
+                                                   "boundary_index": len(state.get("boundary_trace", [])) - 1,
+                                                   "tool_names": [tool["function"]["name"] for tool in (tools or [])],
+                                                   "call_kind": state.get("gnosis_call_kind", "agent")})
         if state.get("gnosis_call_kind", "agent") == "agent":
             for event in state.get("injection_events", []):
                 event.setdefault("next_agent_call", call_id)
@@ -211,7 +223,8 @@ class ScopedInjector:
                     result = None
                 if result is not None:
                     evidence.append({"unit": unit_id, "component": unit["component"],
-                                     "endpoint": endpoint, "loaded": True, "trace": result.get("trace")})
+                                     "endpoint": endpoint, "loaded": True, "trace": result.get("trace"),
+                                     "boundary_index": event["index"], "hook": event["hook"]})
             if unit["id"] not in fired:
                 text += "\n\n[Scoped knowledge " + unit["id"] + "]\n" + unit["content"]
                 evidence.append({"unit": unit["id"], "component": unit["component"],
@@ -228,7 +241,7 @@ class ScopedInjector:
                            "remainingCostUsd": None, "maxOutputTokensPerTask": POLICY["execution_output_tokens"]}}
 
     def process_context(self, messages, state, step, start=0):
-        boundary(state, "context", state.get("current_service"), state.get("current_endpoint"))
+        event = boundary(state, "context", state.get("current_service"), state.get("current_endpoint"))
         text = messages
         for index, unit in enumerate(self.units):
             if index < start:
@@ -261,11 +274,12 @@ class ScopedInjector:
         state.setdefault("injection_events", []).append({
             "unit": unit["id"], "component": "C", "loaded": True,
             "endpoint": state["active_components"][unit["id"]], "in_messages": len(inputs["messages"]),
-            "out_messages": len(messages), "trace": result.get("trace")})
+            "out_messages": len(messages), "trace": result.get("trace"),
+            "boundary_index": state["boundary_trace"][-1]["index"], "hook": "context"})
         return [m.model_dump(mode="json") for m in messages]
 
     def workflow(self, messages, state, step):
-        boundary(state, "workflow", state.get("current_service"), state.get("current_endpoint"))
+        event = boundary(state, "workflow", state.get("current_service"), state.get("current_endpoint"))
         for unit in self.units:
             if unit["id"] not in state.get("active_components", {}) or unit["component"] != "W":
                 continue
@@ -282,21 +296,30 @@ class ScopedInjector:
             elif result.get("action") != "continue":
                 raise CandidateError(unit["id"], "W", "beforeStep 返回动作格式错误")
             state.setdefault("injection_events", []).append({"unit": unit["id"], "component": "W", "loaded": True,
-                                                            "endpoint": state["active_components"][unit["id"]], "action": result["action"]})
+                                                            "endpoint": state["active_components"][unit["id"]], "action": result["action"],
+                                                            "boundary_index": event["index"], "hook": "workflow"})
             if result["action"] == "stop":
                 break
         return messages
 
 
 class ScopedAutomationEnv(AutomationBenchEnv):
-    def __init__(self, *args, injector=None, execution_output=None, **kwargs):
+    def __init__(self, *args, injector=None, execution_output=None, knowledge_treatment=None, **kwargs):
         self.injector = injector
         self.execution_output = execution_output
+        self.knowledge_treatment = knowledge_treatment
         super().__init__(*args, **kwargs)
 
     def execution_guard(self):
         output = self.execution_output or (self.injector.output if self.injector else Path(__file__).resolve().parent.parent / "experiments/pilot")
         require_harness_ready(output)
+
+    def update_tool_args(self, tool_name, tool_args, messages, state, **kwargs):
+        # api_fetch 的可选映射参数按空值处理，修复对所有组相同。
+        if tool_name == "api_fetch":
+            tool_args = {k: v for k, v in tool_args.items()
+                         if not (k in ("params", "body") and isinstance(v, str) and v.strip() == "null")}
+        return super().update_tool_args(tool_name, tool_args, messages, state, **kwargs)
 
     async def extension(self, unit, event, state, value):
         inputs = {"event": event, "input": value,
@@ -510,6 +533,11 @@ class ScopedAutomationEnv(AutomationBenchEnv):
         state["actual_tool_actions"] = []
         state["termination_status"] = "completed"
         state["task"] = state["info"]["task_name"]
+        if self.knowledge_treatment is not None:
+            if self.knowledge_treatment["task"] != state["task"]:
+                raise ValueError("知识路由与实际任务身份不一致")
+            state["knowledge_treatment"] = self.knowledge_treatment
+            state["knowledge_requests"] = []
         state["task_instruction"] = "\n".join(m.content for m in restore_messages(state["prompt"]) if m.role == "user")
         if self.injector:
             encoded = [m.model_dump(mode="json") for m in restore_messages(state["prompt"])]
